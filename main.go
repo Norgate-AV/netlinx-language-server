@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
 	"os"
 
+	"github.com/Norgate-AV/netlinx-language-server/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/rpc"
 )
 
@@ -17,12 +19,34 @@ func main() {
 
 	for scanner.Scan() {
 		msg := scanner.Bytes()
-		handleMessage(logger, msg)
+		method, content, err := rpc.DecodeMessage(msg)
+		if err != nil {
+			logger.Printf("Error decoding message: %v\n", err)
+			continue
+		}
+
+		handleMessage(logger, method, content)
 	}
 }
 
-func handleMessage(logger *log.Logger, msg []byte) {
-	logger.Printf("Received message: %s\n", msg)
+func handleMessage(logger *log.Logger, method string, content []byte) {
+	logger.Printf("Received method: %s\n", method)
+	logger.Printf("Received content: %s\n", content)
+
+	switch method {
+	case "initialize":
+		logger.Println("Handling initialize method")
+
+		var request lsp.InitializeRequest
+		if err := json.Unmarshal(content, &request); err != nil {
+			logger.Printf("Error unmarshalling initialize request: %v\n", err)
+			return
+		}
+
+		logger.Printf("Connected to: %s %s",
+			request.Params.ClientInfo.Name,
+			request.Params.ClientInfo.Version)
+	}
 }
 
 func getLogger(fileName string) *log.Logger {

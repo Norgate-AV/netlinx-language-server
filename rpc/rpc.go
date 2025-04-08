@@ -25,29 +25,51 @@ type BaseMessage struct {
 	Method string `json:"method"`
 }
 
-func DecodeMessage(msg []byte) (string, int, error) {
+func DecodeMessage(msg []byte) (string, []byte, error) {
 	// Split the message into header and content
 	header, content, found := bytes.Cut(msg, []byte{'\r', '\n', '\r', '\n'})
 	if !found {
-		return "", 0, errors.New("did not find the separator")
+		return "", nil, errors.New("did not find the separator")
 	}
 
 	// Parse the header
 	// Content-Length: <number>
 	length, err := strconv.Atoi(string(header[len("Content-Length: "):]))
 	if err != nil {
-		return "", 0, err
+		return "", nil, err
 	}
 
 	// Check if the content length is correct
 	if length != len(content) {
-		return "", 0, errors.New("Content-Length does not match the content")
+		return "", nil, errors.New("Content-Length does not match the content")
 	}
 
 	var message BaseMessage
 	if err := json.Unmarshal(content[:length], &message); err != nil {
-		return "", 0, err
+		return "", nil, err
 	}
 
-	return message.Method, length, nil
+	return message.Method, content[:length], nil
+}
+
+func Split(data []byte, _ bool) (advance int, token []byte, err error) {
+	// Split the message into header and content
+	header, content, found := bytes.Cut(data, []byte{'\r', '\n', '\r', '\n'})
+	if !found {
+		return 0, nil, nil
+	}
+
+	// Parse the header
+	// Content-Length: <number>
+	length, err := strconv.Atoi(string(header[len("Content-Length: "):]))
+	if err != nil {
+		return 0, nil, err
+	}
+
+	// Check if the content length is correct
+	if length < len(content) {
+		return 0, nil, nil
+	}
+
+	return length + len(header) + 4, content[:length], nil
 }

@@ -21,7 +21,8 @@ func TestEncode(t *testing.T) {
 
 func TestDecode(t *testing.T) {
 	message := "Content-Length: 15\r\n\r\n{\"method\":\"hi\"}"
-	method, length, err := rpc.DecodeMessage([]byte(message))
+	method, content, err := rpc.DecodeMessage([]byte(message))
+	length := len(content)
 	if err != nil {
 		t.Fatal(err)
 	}

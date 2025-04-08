@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 
+	"github.com/Norgate-AV/netlinx-language-server/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/rpc"
 )
@@ -17,6 +19,9 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(rpc.Split)
 
+	state := analysis.NewState()
+	writer := os.Stdout
+
 	for scanner.Scan() {
 		msg := scanner.Bytes()
 		method, content, err := rpc.DecodeMessage(msg)
@@ -25,11 +30,11 @@ func main() {
 			continue
 		}
 
-		handleMessage(logger, method, content)
+		handleMessage(logger, writer, state, method, content)
 	}
 }
 
-func handleMessage(logger *log.Logger, method string, content []byte) {
+func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, method string, content []byte) {
 	logger.Printf("Received method: %s\n", method)
 	logger.Printf("Received content: %s\n", content)
 
@@ -46,7 +51,18 @@ func handleMessage(logger *log.Logger, method string, content []byte) {
 		logger.Printf("Connected to: %s %s",
 			request.Params.ClientInfo.Name,
 			request.Params.ClientInfo.Version)
+
+		msg := lsp.NewInitializeResponse(request.ID)
+		writeResponse(writer, msg)
+	case "textDocument/didOpen":
+		logger.Println("Handling textDocument/didOpen method")
+		
 	}
+}
+
+func writeResponse(writer io.Writer, msg any) {
+	res := rpc.EncodeMessage(msg)
+	writer.Write([]byte(res))
 }
 
 func getLogger(fileName string) *log.Logger {

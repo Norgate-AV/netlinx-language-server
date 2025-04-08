@@ -1,5 +1,4 @@
-// filepath: /Users/damienbutt/projects/netlinx-language-server/rpc/jsonrpc_handler.go
-package rpc
+package server
 
 import (
 	"context"
@@ -7,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Norgate-AV/netlinx-language-server/analysis"
-	"github.com/Norgate-AV/netlinx-language-server/lsp"
+	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
+	"github.com/Norgate-AV/netlinx-language-server/internal/protocol"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
@@ -47,7 +46,7 @@ func (h *LSPHandler) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 
 // handleInitialize handles the initialize request.
 func (h *LSPHandler) handleInitialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	var params lsp.InitializeRequestParams
+	var params protocol.InitializeRequestParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		h.logger.Printf("Error unmarshalling initialize params: %v\n", err)
 		sendError(ctx, conn, req.ID, createError(jsonrpc2.CodeParseError, fmt.Sprintf("Invalid initialize params: %v", err)))
@@ -56,7 +55,7 @@ func (h *LSPHandler) handleInitialize(ctx context.Context, conn *jsonrpc2.Conn, 
 
 	h.logger.Printf("Connected to: %s %s", params.ClientInfo.Name, params.ClientInfo.Version)
 
-	response := lsp.NewInitializeResponse(0) // We'll ignore our own ID and use the one from the request
+	response := protocol.NewInitializeResponse(0) // We'll ignore our own ID and use the one from the request
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
 		h.logger.Printf("Error sending initialize response: %v\n", err)
 	}
@@ -64,14 +63,14 @@ func (h *LSPHandler) handleInitialize(ctx context.Context, conn *jsonrpc2.Conn, 
 
 // handleTextDocumentDidOpen handles the textDocument/didOpen notification.
 func (h *LSPHandler) handleTextDocumentDidOpen(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	var params lsp.DidOpenTextDocumentParams
+	var params protocol.DidOpenTextDocumentParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		h.logger.Printf("Error unmarshalling didOpen params: %v\n", err)
 		return // No need to send a response for notifications
 	}
 
 	h.logger.Printf("Opened document: %s\n", params.TextDocument.URI)
-	h.state.OpenDocument(params.TextDocument.URI, params.TextDocument.Text)
+	h.state.AddDocument(params.TextDocument.URI, params.TextDocument.Text)
 }
 
 // createError creates a jsonrpc2.Error from a code and message

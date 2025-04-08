@@ -1,4 +1,4 @@
-package rpc_test
+package server_test
 
 import (
 	"encoding/json"
@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/analysis"
-	"github.com/Norgate-AV/netlinx-language-server/lsp"
-	"github.com/Norgate-AV/netlinx-language-server/rpc"
+	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
+	"github.com/Norgate-AV/netlinx-language-server/internal/protocol"
+	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
@@ -17,17 +17,17 @@ func TestLSPHandlerCreation(t *testing.T) {
 	// Setup a logger and state
 	logger := log.New(os.Stdout, "[TEST] ", log.LstdFlags)
 	state := &analysis.State{
-		Documents: make(map[string]string),
+		Documents: make(map[string]protocol.TextDocumentUri),
 	}
 
 	// Create a new handler
-	handler := rpc.NewLSPHandler(logger, state)
+	handler := server.NewLSPHandler(logger, state)
 	if handler == nil {
 		t.Fatal("Expected non-nil handler")
 	}
 
 	// Test that the state's OpenDocument method works
-	state.OpenDocument("file:///test.axs", "test content")
+	state.AddDocument("file:///test.axs", "test content")
 	content, ok := state.GetDocument("file:///test.axs")
 	if !ok {
 		t.Fatal("Expected document to be added to state")
@@ -39,7 +39,7 @@ func TestLSPHandlerCreation(t *testing.T) {
 
 // TestInitializeResultJSON tests that our InitializeResult struct marshals to JSON correctly
 func TestInitializeResultJSON(t *testing.T) {
-	result := lsp.NewInitializeResponse(0)
+	result := protocol.NewInitializeResponse(0)
 
 	// Test that the result can be marshaled to JSON
 	data, err := json.Marshal(result)
@@ -48,7 +48,7 @@ func TestInitializeResultJSON(t *testing.T) {
 	}
 
 	// Unmarshal and verify the contents
-	var unmarshaled lsp.InitializeResult
+	var unmarshaled protocol.InitializeResult
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal InitializeResult: %v", err)
 	}

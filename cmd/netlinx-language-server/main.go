@@ -2,16 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
-	"github.com/Norgate-AV/netlinx-language-server/analysis"
-	"github.com/Norgate-AV/netlinx-language-server/rpc"
+	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
+	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	"github.com/sourcegraph/jsonrpc2"
-
-	tree_sitter_netlinx "github.com/norgate-av/tree-sitter-netlinx/bindings/go"
-	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 func main() {
@@ -20,20 +16,8 @@ func main() {
 
 	state := analysis.NewState()
 
-	// Example tree-sitter parsing
-	code := []byte("dvDisplay = 5001:1:0")
-	parser := tree_sitter.NewParser()
-	defer parser.Close()
-	parser.SetLanguage(tree_sitter.NewLanguage(tree_sitter_netlinx.Language()))
-
-	tree := parser.Parse(code, nil)
-	defer tree.Close()
-
-	root := tree.RootNode()
-	fmt.Println(root.ToSexp())
-
 	// Create JSONRPC handler
-	handler := rpc.NewLSPHandler(logger, &state)
+	handler := server.NewLSPHandler(logger, state)
 
 	// Create and run JSONRPC connection using standard input/output
 	<-jsonrpc2.NewConn(

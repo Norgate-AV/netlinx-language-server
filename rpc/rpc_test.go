@@ -1,37 +1,82 @@
 package rpc_test
 
 import (
+	"encoding/json"
+	"log"
+	"os"
 	"testing"
 
+	"github.com/Norgate-AV/netlinx-language-server/analysis"
+	"github.com/Norgate-AV/netlinx-language-server/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/rpc"
+	"github.com/sourcegraph/jsonrpc2"
 )
 
-type EncodingExample struct {
-	Testing bool `json:"testing"`
-}
+// TestLSPHandlerCreation tests that the LSP handler can be created and basic methods
+func TestLSPHandlerCreation(t *testing.T) {
+	// Setup a logger and state
+	logger := log.New(os.Stdout, "[TEST] ", log.LstdFlags)
+	state := &analysis.State{
+		Documents: make(map[string]string),
+	}
 
-func TestEncode(t *testing.T) {
-	expected := "Content-Length: 16\r\n\r\n{\"testing\":true}"
-	actual := rpc.EncodeMessage(EncodingExample{Testing: true})
+	// Create a new handler
+	handler := rpc.NewLSPHandler(logger, state)
+	if handler == nil {
+		t.Fatal("Expected non-nil handler")
+	}
 
-	if expected != actual {
-		t.Fatalf("Expected %s, Actual %s", expected, actual)
+	// Test that the state's OpenDocument method works
+	state.OpenDocument("file:///test.axs", "test content")
+	content, ok := state.GetDocument("file:///test.axs")
+	if !ok {
+		t.Fatal("Expected document to be added to state")
+	}
+	if content != "test content" {
+		t.Errorf("Expected document content 'test content', got '%s'", content)
 	}
 }
 
-func TestDecode(t *testing.T) {
-	message := "Content-Length: 15\r\n\r\n{\"method\":\"hi\"}"
-	method, content, err := rpc.DecodeMessage([]byte(message))
-	length := len(content)
+// TestInitializeResultJSON tests that our InitializeResult struct marshals to JSON correctly
+func TestInitializeResultJSON(t *testing.T) {
+	result := lsp.NewInitializeResponse(0)
+
+	// Test that the result can be marshaled to JSON
+	data, err := json.Marshal(result)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Failed to marshal InitializeResult: %v", err)
 	}
 
-	if length != 15 {
-		t.Fatalf("Expected length 15, Actual %d", length)
+	// Unmarshal and verify the contents
+	var unmarshaled lsp.InitializeResult
+	if err := json.Unmarshal(data, &unmarshaled); err != nil {
+		t.Fatalf("Failed to unmarshal InitializeResult: %v", err)
 	}
 
-	if method != "hi" {
-		t.Fatalf("Expected method hi, Actual %s", method)
+	// Verify server info
+	if unmarshaled.ServerInfo.Name != "netlinx-language-server" {
+		t.Errorf("Expected server name 'netlinx-language-server', got '%s'", unmarshaled.ServerInfo.Name)
+	}
+
+	// Check that the server version exists
+	if unmarshaled.ServerInfo.Version == "" {
+		t.Error("Expected non-empty server version")
+	}
+}
+
+// TestCreateError tests the creation of a jsonrpc2 error
+func TestCreateError(t *testing.T) {
+	// Create a test error
+	err := &jsonrpc2.Error{
+		Code:    jsonrpc2.CodeInternalError,
+		Message: "Test error message",
+	}
+
+	// Test that the error has the expected code and message
+	if err.Code != jsonrpc2.CodeInternalError {
+		t.Errorf("Expected error code %d, got %d", jsonrpc2.CodeInternalError, err.Code)
+	}
+	if err.Message != "Test error message" {
+		t.Errorf("Expected error message 'Test error message', got '%s'", err.Message)
 	}
 }

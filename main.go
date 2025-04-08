@@ -1,16 +1,14 @@
 package main
 
 import (
-	"bufio"
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
 	"log"
 	"os"
 
 	"github.com/Norgate-AV/netlinx-language-server/analysis"
-	"github.com/Norgate-AV/netlinx-language-server/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/rpc"
+	"github.com/sourcegraph/jsonrpc2"
 
 	tree_sitter_netlinx "github.com/norgate-av/tree-sitter-netlinx/bindings/go"
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
@@ -20,12 +18,9 @@ func main() {
 	logger := getLogger("netlinx-language-server.log")
 	logger.Println("Started Netlinx Language Server...")
 
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(rpc.Split)
-
 	state := analysis.NewState()
-	writer := os.Stdout
 
+	// Example tree-sitter parsing
 	code := []byte("dvDisplay = 5001:1:0")
 	parser := tree_sitter.NewParser()
 	defer parser.Close()
@@ -37,55 +32,33 @@ func main() {
 	root := tree.RootNode()
 	fmt.Println(root.ToSexp())
 
-	for scanner.Scan() {
-		msg := scanner.Bytes()
-		method, content, err := rpc.DecodeMessage(msg)
-		if err != nil {
-			logger.Printf("Error decoding message: %v\n", err)
-			continue
-		}
+	// Create JSONRPC handler
+	handler := rpc.NewLSPHandler(logger, &state)
 
-		handleMessage(logger, writer, state, method, content)
-	}
+	// Create and run JSONRPC connection using standard input/output
+	<-jsonrpc2.NewConn(
+		context.Background(),
+		jsonrpc2.NewBufferedStream(&stdinStdout{}, jsonrpc2.VSCodeObjectCodec{}),
+		handler,
+	).DisconnectNotify()
 }
 
-func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, method string, content []byte) {
-	logger.Printf("Received method: %s\n", method)
-	logger.Printf("Received content: %s\n", content)
+// stdinStdout implements io.ReadWriteCloser for stdin/stdout communication
+type stdinStdout struct{}
 
-	switch method {
-	case "initialize":
-		logger.Println("Handling initialize method")
-
-		var request lsp.InitializeRequest
-		if err := json.Unmarshal(content, &request); err != nil {
-			logger.Printf("Error unmarshalling initialize request: %v\n", err)
-			return
-		}
-
-		logger.Printf("Connected to: %s %s",
-			request.Params.ClientInfo.Name,
-			request.Params.ClientInfo.Version)
-
-		msg := lsp.NewInitializeResponse(request.ID)
-		writeResponse(writer, msg)
-	case "textDocument/didOpen":
-		logger.Println("Handling textDocument/didOpen method")
-
-		var request lsp.DidOpenTextDocumentNotification
-		if err := json.Unmarshal(content, &request); err != nil {
-			logger.Printf("Error unmarshalling didOpen request: %v\n", err)
-			return
-		}
-
-		logger.Printf("Opened document: %s\n", request.Params.TextDocument.URI)
-		state.OpenDocument(request.Params.TextDocument.URI, request.Params.TextDocument.Text)
-	}
+func (stdinStdout) Read(p []byte) (n int, err error) {
+	return os.Stdin.Read(p)
 }
 
-func writeResponse(writer io.Writer, msg any) {
-	res := rpc.EncodeMessage(msg)
-	writer.Write([]byte(res))
+func (stdinStdout) Write(p []byte) (n int, err error) {
+	return os.Stdout.Write(p)
+}
+
+func (stdinStdout) Close() error {
+	if err := os.Stdin.Close(); err != nil {
+		return err
+	}
+	return os.Stdout.Close()
 }
 
 func getLogger(fileName string) *log.Logger {

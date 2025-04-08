@@ -1,7 +1,7 @@
 package lsp
 
 type DidOpenTextDocumentNotification struct {
-	Notification
+	// Notification fields are handled by jsonrpc2
 	Params DidOpenTextDocumentParams `json:"params"`
 }
 

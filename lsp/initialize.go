@@ -1,7 +1,6 @@
 package lsp
 
 type InitializeRequest struct {
-	Request
 	Params InitializeRequestParams `json:"params"`
 }
 
@@ -16,7 +15,6 @@ type ClientInfo struct {
 }
 
 type InitializeResponse struct {
-	Response
 	Result InitializeResult `json:"result"`
 }
 
@@ -39,18 +37,12 @@ type ServerInfo struct {
 	Version string `json:"version"`
 }
 
-func NewInitializeResponse(id int) InitializeResponse {
-	return InitializeResponse{
-		Response: Response{
-			RPC: "2.0",
-			ID:  &id,
-		},
-		Result: InitializeResult{
-			Capabilities: ServerCapabilities{},
-			ServerInfo: ServerInfo{
-				Name:    "netlinx-language-server",
-				Version: "0.1.0",
-			},
+func NewInitializeResponse(_ int) InitializeResult {
+	return InitializeResult{
+		Capabilities: ServerCapabilities{},
+		ServerInfo: ServerInfo{
+			Name:    "netlinx-language-server",
+			Version: "0.1.0",
 		},
 	}
 }

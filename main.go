@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -10,17 +11,31 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/rpc"
+
+	tree_sitter_netlinx "github.com/norgate-av/tree-sitter-netlinx/bindings/go"
+	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 func main() {
 	logger := getLogger("netlinx-language-server.log")
-	logger.Println("Starting Netlinx Language Server...")
+	logger.Println("Started Netlinx Language Server...")
 
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(rpc.Split)
 
 	state := analysis.NewState()
 	writer := os.Stdout
+
+	code := []byte("dvDisplay = 5001:1:0")
+	parser := tree_sitter.NewParser()
+	defer parser.Close()
+	parser.SetLanguage(tree_sitter.NewLanguage(tree_sitter_netlinx.Language()))
+
+	tree := parser.Parse(code, nil)
+	defer tree.Close()
+
+	root := tree.RootNode()
+	fmt.Println(root.ToSexp())
 
 	for scanner.Scan() {
 		msg := scanner.Bytes()
@@ -56,7 +71,15 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 		writeResponse(writer, msg)
 	case "textDocument/didOpen":
 		logger.Println("Handling textDocument/didOpen method")
-		
+
+		var request lsp.DidOpenTextDocumentNotification
+		if err := json.Unmarshal(content, &request); err != nil {
+			logger.Printf("Error unmarshalling didOpen request: %v\n", err)
+			return
+		}
+
+		logger.Printf("Opened document: %s\n", request.Params.TextDocument.URI)
+		state.OpenDocument(request.Params.TextDocument.URI, request.Params.TextDocument.Text)
 	}
 }
 

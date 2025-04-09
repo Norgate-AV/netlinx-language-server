@@ -20,9 +20,9 @@ func TestLSPHandlerCreation(t *testing.T) {
 		Documents: make(map[string]protocol.TextDocumentUri),
 	}
 
-	// Create a new handler
-	handler := server.NewLSPHandler(logger, state)
-	if handler == nil {
+	// Create a new Server
+	server := server.NewServer(logger, state)
+	if server == nil {
 		t.Fatal("Expected non-nil handler")
 	}
 

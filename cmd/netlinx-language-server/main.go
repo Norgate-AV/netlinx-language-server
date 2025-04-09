@@ -2,32 +2,37 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
+	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
 func main() {
-	logger := getLogger("netlinx-language-server.log")
-	logger.Println("Started Netlinx Language Server...")
+	// logger := getLogger("netlinx-language-server.log")
+	log, err := logger.NewFileLogger("netlinx-language-server.log")
+	if err != nil {
+		log = logger.NewStdLogger()
+		log.Printf("Failed to initialize file logger: %v, falling back to stderr", err)
+	}
+
+	log.Println("Started Netlinx Language Server...")
 
 	state := analysis.NewState()
 
 	// Create JSONRPC handler
-	handler := server.NewLSPHandler(logger, state)
+	server := server.NewServer(log, state)
 
 	// Create and run JSONRPC connection using standard input/output
 	<-jsonrpc2.NewConn(
 		context.Background(),
 		jsonrpc2.NewBufferedStream(&stdinStdout{}, jsonrpc2.VSCodeObjectCodec{}),
-		handler,
+		server,
 	).DisconnectNotify()
 }
 
-// stdinStdout implements io.ReadWriteCloser for stdin/stdout communication
 type stdinStdout struct{}
 
 func (stdinStdout) Read(p []byte) (n int, err error) {
@@ -43,13 +48,4 @@ func (stdinStdout) Close() error {
 		return err
 	}
 	return os.Stdout.Close()
-}
-
-func getLogger(fileName string) *log.Logger {
-	logFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o666)
-	if err != nil {
-		panic(err)
-	}
-
-	return log.New(logFile, "[netlinx-language-server]", log.Ldate|log.Ltime|log.Lshortfile)
 }

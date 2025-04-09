@@ -1,9 +1,8 @@
 package protocol
 
-
-// type TextDocumentIdentifier struct {
-// 	URI string `json:"uri"`
-// }
+type TextDocumentIdentifier struct {
+	URI string `json:"uri"`
+}
 
 // type VersionTextDocumentIdentifier struct {
 // 	TextDocumentIdentifier
@@ -15,13 +14,10 @@ package protocol
 // 	Position     Position               `json:"position"`
 // }
 
-
-
 // type Location struct {
 // 	URI   string `json:"uri"`
 // 	Range Range  `json:"range"`
 // }
-
 
 // type WorkspaceEdit struct {
 // 	Changes map[string][]TextEdit `json:"changes"`

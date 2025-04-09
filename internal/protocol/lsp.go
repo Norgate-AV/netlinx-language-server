@@ -55,3 +55,24 @@ type ServerInfo struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 }
+
+type DidChangeTextDocumentParams struct {
+	TextDocument   VersionedTextDocumentIdentifier  `json:"textDocument"`
+	ContentChanges []TextDocumentContentChangeEvent `json:"contentChanges"`
+}
+
+type VersionedTextDocumentIdentifier struct {
+	URI     TextDocumentUri `json:"uri"`
+	Version int             `json:"version"`
+}
+
+type TextDocumentContentChangeEvent struct {
+	Range       *Range `json:"range,omitempty"`
+	RangeLength *int   `json:"rangeLength,omitempty"`
+	Text        string `json:"text"`
+}
+
+// DidCloseTextDocumentParams for textDocument/didClose
+type DidCloseTextDocumentParams struct {
+	TextDocument TextDocumentIdentifier `json:"textDocument"`
+}

@@ -26,6 +26,7 @@ func main() {
 	app.Version = version
 
 	app.HideVersion = true
+	app.HideHelpCommand = true
 
 	if commit != "" && date != "" {
 		app.Version = fmt.Sprintf("%s (%s, %s)", version, commit, date)
@@ -39,15 +40,26 @@ func main() {
 			Value:   "netlinx-language-server.log",
 		},
 		&cli.BoolFlag{
-			Name:    "verbose",
-			Aliases: []string{"v"},
-			Usage:   "Enable verbose logging",
-			Value:   false,
+			Name:  "verbose",
+			Usage: "Enable verbose logging",
+			Value: false,
+		},
+		&cli.BoolFlag{
+			Name:               "version",
+			Aliases:            []string{"v"},
+			Usage:              "Print version information",
+			DisableDefaultText: true,
 		},
 	}
 
 	app.Action = func(c *cli.Context) error {
-		log, err := logger.NewFileLogger("netlinx-language-server.log")
+		if c.Bool("version") {
+			fmt.Println(app.Version)
+			return nil
+		}
+
+		logFile := c.String("log-file")
+		log, err := logger.NewFileLogger(logFile)
 		if err != nil {
 			log = logger.NewStdLogger()
 			log.Printf("Failed to initialize file logger: %v, falling back to stderr", err)
@@ -77,21 +89,7 @@ func main() {
 		return nil
 	}
 
-	app.Commands = []*cli.Command{
-		{
-			Name:  "version",
-			Usage: "Print the version of the language server",
-			Action: func(c *cli.Context) error {
-				fmt.Printf("Version: %s\n", version)
-				if commit != "" && date != "" {
-					fmt.Printf("Commit: %s\n", commit)
-					fmt.Printf("Date: %s\n", date)
-				}
-
-				return nil
-			},
-		},
-	}
+	app.Commands = []*cli.Command{}
 
 	if err := app.Run(os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)

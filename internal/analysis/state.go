@@ -15,7 +15,7 @@ type State struct {
 
 func NewState() *State {
 	return &State{
-		Documents: make(map[string]string),
+		Documents: make(map[string]protocol.TextDocumentUri),
 		Parser:    parser.NewParser(),
 	}
 }

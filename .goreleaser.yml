@@ -46,8 +46,8 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
-    format: tar.gz
-    builds:
+    formats: [tar.gz]
+    ids:
       - linux-darwin
 
   - id: windows
@@ -57,8 +57,8 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
-    format: zip
-    builds:
+    formats: [zip]
+    ids:
       - windows
 
 checksum:

@@ -9,6 +9,7 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/protocol"
+
 	"github.com/sourcegraph/jsonrpc2"
 )
 
@@ -31,9 +32,17 @@ func NewServer(logger logger.Logger, state *analysis.State) *Server {
 	return handler
 }
 
+func (s *Server) Stop() {}
+
 func (s *Server) registerHandlers() {
 	s.handlers["initialize"] = s.handleInitialize
+	s.handlers["initialized"] = s.handleInitialized
+	s.handlers["shutdown"] = s.handleShutdown
+	s.handlers["exit"] = s.handleExit
 	s.handlers["textDocument/didOpen"] = s.handleTextDocumentDidOpen
+	s.handlers["textDocument/didChange"] = s.handleTextDocumentDidChange
+	s.handlers["textDocument/didClose"] = s.handleTextDocumentDidClose
+	s.handlers["textDocument/hover"] = s.handleHover
 }
 
 func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
@@ -51,7 +60,6 @@ func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 	}
 }
 
-// handleInitialize handles the initialize request.
 func (s *Server) handleInitialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
 	var params protocol.InitializeRequestParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
@@ -62,25 +70,69 @@ func (s *Server) handleInitialize(ctx context.Context, conn *jsonrpc2.Conn, req 
 
 	s.logger.Printf("Connected to: %s %s", params.ClientInfo.Name, params.ClientInfo.Version)
 
-	response := protocol.NewInitializeResponse(0) // We'll ignore our own ID and use the one from the request
+	response := protocol.NewInitializeResponse(0)
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
 		s.logger.Printf("Error sending initialize response: %v\n", err)
 	}
 }
 
-// handleTextDocumentDidOpen handles the textDocument/didOpen notification.
+// Add these implementations
+func (s *Server) handleInitialized(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	s.logger.Println("Server initialized")
+	// No response needed for a notification
+}
+
+func (s *Server) handleShutdown(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	s.logger.Println("Shutdown request received")
+	if err := conn.Reply(ctx, req.ID, nil); err != nil {
+		s.logger.Printf("Error sending shutdown response: %v\n", err)
+	}
+}
+
+func (s *Server) handleExit(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	s.logger.Println("Exit notification received")
+	// Close connection - typically this would terminate the process
+}
+
 func (s *Server) handleTextDocumentDidOpen(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
 	var params protocol.DidOpenTextDocumentParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.logger.Printf("Error unmarshalling didOpen params: %v\n", err)
-		return // No need to send a response for notifications
+		return
 	}
 
 	s.logger.Printf("Opened document: %s\n", params.TextDocument.URI)
 	s.state.AddDocument(params.TextDocument.URI, params.TextDocument.Text)
 }
 
-// createError creates a jsonrpc2.Error from a code and message
+// Add this simple change handler
+func (s *Server) handleTextDocumentDidChange(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	var params protocol.DidChangeTextDocumentParams
+	if err := json.Unmarshal(*req.Params, &params); err != nil {
+		s.logger.Printf("Error unmarshalling didChange params: %v\n", err)
+		return
+	}
+
+	s.logger.Printf("Changed document: %s\n", params.TextDocument.URI)
+	if len(params.ContentChanges) > 0 {
+		s.state.UpdateDocument(params.TextDocument.URI, params.ContentChanges[0].Text)
+	}
+}
+
+// Add this simple close handler
+func (s *Server) handleTextDocumentDidClose(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	var params protocol.DidCloseTextDocumentParams
+	if err := json.Unmarshal(*req.Params, &params); err != nil {
+		s.logger.Printf("Error unmarshalling didClose params: %v\n", err)
+		return
+	}
+
+	s.logger.Printf("Closed document: %s\n", params.TextDocument.URI)
+	s.state.CloseDocument(params.TextDocument.URI)
+}
+
+
+
 func createError(code int64, message string) *jsonrpc2.Error {
 	return &jsonrpc2.Error{
 		Code:    code,
@@ -88,7 +140,6 @@ func createError(code int64, message string) *jsonrpc2.Error {
 	}
 }
 
-// sendError sends an error response.
 func sendError(ctx context.Context, conn *jsonrpc2.Conn, id jsonrpc2.ID, err *jsonrpc2.Error) {
 	if replyErr := conn.ReplyWithError(ctx, id, err); replyErr != nil {
 		log.Printf("Error sending error response: %v\n", replyErr)

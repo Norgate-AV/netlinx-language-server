@@ -8,6 +8,7 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+
 	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/urfave/cli/v2"
@@ -53,40 +54,7 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
-		if c.Bool("version") {
-			fmt.Println(app.Version)
-			return nil
-		}
-
-		logFile := c.String("log-file")
-		log, err := logger.NewFileLogger(logFile)
-		if err != nil {
-			log = logger.NewStdLogger()
-			log.Printf("Failed to initialize file logger: %v, falling back to stderr", err)
-		}
-
-		if c.Bool("verbose") {
-			if l := logger.GetLogrusLogger(log); l != nil {
-				l.SetLevel(logrus.DebugLevel)
-				log.Println("Verbose logging enabled")
-			}
-		}
-
-		log.Println("Started Netlinx Language Server...")
-
-		state := analysis.NewState()
-
-		// Create JSONRPC handler
-		server := server.NewServer(log, state)
-
-		// Create and run JSONRPC connection using standard input/output
-		<-jsonrpc2.NewConn(
-			context.Background(),
-			jsonrpc2.NewBufferedStream(&stdinStdout{}, jsonrpc2.VSCodeObjectCodec{}),
-			server,
-		).DisconnectNotify()
-
-		return nil
+		return serve(c)
 	}
 
 	app.Commands = []*cli.Command{}
@@ -95,6 +63,54 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func serve(c *cli.Context) error {
+	if c.Bool("version") {
+		fmt.Println(c.App.Version)
+		return nil
+	}
+
+	logFile := c.String("log-file")
+	log, err := logger.NewFileLogger(logFile)
+	if err != nil {
+		log = logger.NewStdLogger()
+		log.Printf("Failed to initialize file logger: %v, falling back to stderr", err)
+	}
+
+	if c.Bool("verbose") {
+		if l := logger.GetLogrusLogger(log); l != nil {
+			l.SetLevel(logrus.DebugLevel)
+			log.Println("Verbose logging enabled")
+		}
+	}
+
+	log.Println("Started Netlinx Language Server...")
+
+	state := analysis.NewState()
+
+	server := server.NewServer(log, state)
+	// defer func() {
+	// 	if err := server.Shutdown(); err != nil {
+	// 		log.Printf("Error shutting down server: %v", err)
+	// 	}
+	// }()
+
+	// var connOpt []jsonrpc2.ConnOpt
+	// if trace {
+	// 	connOpt = append(connOpt, jsonrpc2.LogMessages(log.New(logWriter, "", 0)))
+	// }
+
+	log.Println("Reading from stdin, writing to stdout")
+	<-jsonrpc2.NewConn(
+		context.Background(),
+		jsonrpc2.NewBufferedStream(&stdinStdout{}, jsonrpc2.VSCodeObjectCodec{}),
+		server,
+		// connOpt...,
+	).DisconnectNotify()
+	log.Println("Connections closed")
+
+	return nil
 }
 
 type stdinStdout struct{}

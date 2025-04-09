@@ -20,21 +20,16 @@ func NewFileLogger(fileName string) (Logger, error) {
 	}
 
 	log.SetOutput(file)
-	log.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp:    true,
-		DisableTimestamp: false,
-	})
+	log.SetFormatter(getFormatter())
 
 	return log, nil
 }
 
 func NewStdLogger() Logger {
 	log := logrus.New()
+
 	log.SetOutput(os.Stderr)
-	log.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp:    true,
-		DisableTimestamp: false,
-	})
+	log.SetFormatter(getFormatter())
 
 	return log
 }
@@ -45,4 +40,13 @@ func GetLogrusLogger(log Logger) *logrus.Logger {
 	}
 
 	return nil
+}
+
+func getFormatter() *PrefixFormatter {
+	return &PrefixFormatter{
+		Prefix: "[netlinx-language-server]",
+		Formatter: &logrus.TextFormatter{
+			FullTimestamp: true,
+		},
+	}
 }

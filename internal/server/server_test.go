@@ -17,7 +17,7 @@ func TestLSPHandlerCreation(t *testing.T) {
 	// Setup a logger and state
 	logger := log.New(os.Stdout, "[TEST] ", log.LstdFlags)
 	state := &analysis.State{
-		Documents: make(map[string]protocol.TextDocumentUri),
+		Documents: make(map[string]protocol.DocumentUri),
 	}
 
 	// Create a new Server

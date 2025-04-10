@@ -1,35 +1,37 @@
 package protocol
 
+type InitializeRequest struct {
+	Params InitializeRequestParams `json:"params"`
+}
+
+type InitializeRequestParams struct {
+	ClientInfo *ClientInfo `json:"clientInfo"`
+	// ... there's tons more that goes here
+}
+
+type InitializeResponse struct {
+	Result InitializeResult `json:"result"`
+}
+
+type InitializeResult struct {
+	Capabilities ServerCapabilities `json:"capabilities"`
+	ServerInfo   ServerInfo         `json:"serverInfo"`
+}
+
 func NewInitializeResponse(_ int) InitializeResult {
 	return InitializeResult{
 		Capabilities: ServerCapabilities{
-			// Use incremental sync for better performance
-			TextDocumentSync: TextDocumentSyncKindIncremental,
-			HoverProvider:    true,
-
-			// Add document symbol support for testing structure parsing
-			// DocumentSymbolProvider: true,
-
-			// // For showing parse errors
-			// DiagnosticProvider: &DiagnosticOptions{
-			// 	InterFileDependencies: false,
-			// 	WorkspaceDiagnostics:  false,
-			// },
+			TextDocumentSync:       TextDocumentSyncKindIncremental,
+			HoverProvider:          true,
+			DocumentSymbolProvider: true,
+			DiagnosticProvider: &DiagnosticOptions{
+				InterFileDependencies: false,
+				WorkspaceDiagnostics:  false,
+			},
 		},
 		ServerInfo: ServerInfo{
 			Name:    "netlinx-language-server",
 			Version: "0.1.0",
 		},
 	}
-}
-
-const (
-	TextDocumentSyncKindNone = iota
-	TextDocumentSyncKindFull
-	TextDocumentSyncKindIncremental
-)
-
-type DiagnosticOptions struct {
-	InterFileDependencies bool `json:"interFileDependencies"`
-	WorkspaceDiagnostics  bool `json:"workspaceDiagnostics"`
 }

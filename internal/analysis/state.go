@@ -8,14 +8,14 @@ import (
 )
 
 type State struct {
-	Documents map[string]protocol.TextDocumentUri
+	Documents map[string]protocol.DocumentUri
 	Parser    *parser.Parser
 	mutex     sync.RWMutex
 }
 
 func NewState() *State {
 	return &State{
-		Documents: make(map[string]protocol.TextDocumentUri),
+		Documents: make(map[string]protocol.DocumentUri),
 		Parser:    parser.NewParser(),
 	}
 }

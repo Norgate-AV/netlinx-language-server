@@ -4,7 +4,7 @@ BUILD_DIR = build
 VERSION = 0.1.0
 LDFLAGS = -ldflags "-X main.Version=$(VERSION)"
 
-.PHONY: build clean test run fmt lint install
+.PHONY: build clean test test-cover test-report run fmt lint install
 
 # Default target
 all: fmt lint test build
@@ -23,7 +23,17 @@ clean:
 # Run tests
 test:
 	@echo "Running tests..."
-	@go test ./internal/...
+	@go test -v -count=1 ./...
+
+test-coverage:
+	@echo "Running tests with coverage..."
+	go test -v -cover ./...
+
+test-report:
+	@echo "Generating test report..."
+	go test -v -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated at coverage.html"
 
 fmt:
 	@echo "Formatting code..."

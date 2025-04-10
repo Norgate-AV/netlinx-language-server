@@ -59,7 +59,10 @@ func (s *State) GetSyntaxTree(uri string) (*parser.Tree, bool) {
 		return nil, false
 	}
 
-	tree := s.Parser.Parse([]byte(content))
+	tree, err := s.Parser.Parse([]byte(content))
+	if err != nil {
+		return nil, false
+	}
 
 	return tree, true
 }

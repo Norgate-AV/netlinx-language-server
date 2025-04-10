@@ -8,7 +8,7 @@ import (
 	"github.com/sourcegraph/jsonrpc2"
 )
 
-func (s *Server) handleHover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
 	var params lsp.HoverParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {

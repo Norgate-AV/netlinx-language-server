@@ -30,22 +30,3 @@ type SemanticTokensClientCapabilities struct {
 	OverlappingTokenSupport bool     `json:"overlappingTokenSupport,omitempty"`
 	MultilineTokenSupport   bool     `json:"multilineTokenSupport,omitempty"`
 }
-
-func NewInitializeResponse(_ int) InitializeResult {
-	return InitializeResult{
-		Capabilities: ServerCapabilities{
-			TextDocumentSync:       TextDocumentSyncKindIncremental,
-			HoverProvider:          true,
-			DocumentSymbolProvider: true,
-			DiagnosticProvider: &DiagnosticOptions{
-				InterFileDependencies: false,
-				WorkspaceDiagnostics:  false,
-			},
-			// SemanticTokensProvider: &SemanticTokensOptions{
-		},
-		ServerInfo: ServerInfo{
-			Name:    "netlinx-language-server",
-			Version: "0.1.0",
-		},
-	}
-}

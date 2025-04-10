@@ -39,7 +39,7 @@ func TestLSPHandlerCreation(t *testing.T) {
 
 // TestInitializeResultJSON tests that our InitializeResult struct marshals to JSON correctly
 func TestInitializeResultJSON(t *testing.T) {
-	result := lsp.NewInitializeResponse(0)
+	result := server.NewInitializeResponse()
 
 	// Test that the result can be marshaled to JSON
 	data, err := json.Marshal(result)

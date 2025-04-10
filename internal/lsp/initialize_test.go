@@ -6,10 +6,12 @@ import (
 )
 
 func TestInitializeResultSerialization(t *testing.T) {
+	b := func(v bool) *bool { return &v }
+
 	result := InitializeResult{
 		Capabilities: ServerCapabilities{
 			TextDocumentSync: TextDocumentSyncKindIncremental,
-			HoverProvider:    true,
+			HoverProvider:    b(true),
 		},
 		ServerInfo: ServerInfo{
 			Name:    "TestServer",

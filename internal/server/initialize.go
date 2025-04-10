@@ -42,11 +42,13 @@ func (s *Server) Initialized(ctx context.Context, conn *jsonrpc2.Conn, req *json
 }
 
 func NewInitializeResponse() lsp.InitializeResult {
+	b := func(v bool) *bool { return &v }
+
 	return lsp.InitializeResult{
 		Capabilities: lsp.ServerCapabilities{
 			TextDocumentSync:       lsp.TextDocumentSyncKindIncremental,
-			HoverProvider:          true,
-			DocumentSymbolProvider: true,
+			HoverProvider:          b(true),
+			DocumentSymbolProvider: b(true),
 			DiagnosticProvider: &lsp.DiagnosticOptions{
 				InterFileDependencies: false,
 				WorkspaceDiagnostics:  false,

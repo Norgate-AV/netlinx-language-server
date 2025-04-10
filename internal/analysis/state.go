@@ -3,6 +3,7 @@ package analysis
 import (
 	"sync"
 
+	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 )
@@ -11,6 +12,7 @@ type State struct {
 	Documents map[string]lsp.DocumentUri
 	Parser    *parser.Parser
 	mutex     sync.RWMutex
+	Logger    logger.Logger
 }
 
 func NewState() *State {

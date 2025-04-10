@@ -20,3 +20,22 @@ type DocumentSymbol struct {
 type DocumentSymbolParams struct {
 	TextDocument TextDocumentIdentifier `json:"textDocument"`
 }
+
+type SymbolKind = int
+
+const (
+	SymbolKindFile        SymbolKind = 1
+	SymbolKindModule      SymbolKind = 2
+	SymbolKindNamespace   SymbolKind = 3
+	SymbolKindPackage     SymbolKind = 4
+	SymbolKindClass       SymbolKind = 5
+	SymbolKindMethod      SymbolKind = 6
+	SymbolKindProperty    SymbolKind = 7
+	SymbolKindField       SymbolKind = 8
+	SymbolKindConstructor SymbolKind = 9
+	SymbolKindEnum        SymbolKind = 10
+	SymbolKindInterface   SymbolKind = 11
+	SymbolKindFunction    SymbolKind = 12
+	SymbolKindVariable    SymbolKind = 13
+	SymbolKindConstant    SymbolKind = 14
+)

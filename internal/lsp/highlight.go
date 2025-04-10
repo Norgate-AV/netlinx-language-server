@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type DocumentHighlight struct {
 	Range Range `json:"range"`

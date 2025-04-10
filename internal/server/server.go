@@ -8,7 +8,7 @@ import (
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
-	"github.com/Norgate-AV/netlinx-language-server/internal/protocol"
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
@@ -61,7 +61,7 @@ func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 }
 
 func (s *Server) handleInitialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	var params protocol.InitializeRequestParams
+	var params lsp.InitializeRequestParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.logger.Printf("Error unmarshalling initialize params: %v\n", err)
 		sendError(ctx, conn, req.ID, createError(jsonrpc2.CodeParseError, fmt.Sprintf("Invalid initialize params: %v", err)))
@@ -70,7 +70,7 @@ func (s *Server) handleInitialize(ctx context.Context, conn *jsonrpc2.Conn, req 
 
 	s.logger.Printf("Connected to: %s %s", params.ClientInfo.Name, params.ClientInfo.Version)
 
-	response := protocol.NewInitializeResponse(0)
+	response := lsp.NewInitializeResponse(0)
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
 		s.logger.Printf("Error sending initialize response: %v\n", err)
 	}
@@ -95,7 +95,7 @@ func (s *Server) handleExit(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 }
 
 func (s *Server) handleTextDocumentDidOpen(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	var params protocol.DidOpenTextDocumentParams
+	var params lsp.DidOpenTextDocumentParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.logger.Printf("Error unmarshalling didOpen params: %v\n", err)
 		return
@@ -107,7 +107,7 @@ func (s *Server) handleTextDocumentDidOpen(ctx context.Context, conn *jsonrpc2.C
 
 // Add this simple change handler
 func (s *Server) handleTextDocumentDidChange(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	var params protocol.DidChangeTextDocumentParams
+	var params lsp.DidChangeTextDocumentParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.logger.Printf("Error unmarshalling didChange params: %v\n", err)
 		return
@@ -121,7 +121,7 @@ func (s *Server) handleTextDocumentDidChange(ctx context.Context, conn *jsonrpc2
 
 // Add this simple close handler
 func (s *Server) handleTextDocumentDidClose(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	var params protocol.DidCloseTextDocumentParams
+	var params lsp.DidCloseTextDocumentParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.logger.Printf("Error unmarshalling didClose params: %v\n", err)
 		return
@@ -130,8 +130,6 @@ func (s *Server) handleTextDocumentDidClose(ctx context.Context, conn *jsonrpc2.
 	s.logger.Printf("Closed document: %s\n", params.TextDocument.URI)
 	s.state.CloseDocument(params.TextDocument.URI)
 }
-
-
 
 func createError(code int64, message string) *jsonrpc2.Error {
 	return &jsonrpc2.Error{

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
-	"github.com/Norgate-AV/netlinx-language-server/internal/protocol"
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	"github.com/sourcegraph/jsonrpc2"
 )
@@ -17,7 +17,7 @@ func TestLSPHandlerCreation(t *testing.T) {
 	// Setup a logger and state
 	logger := log.New(os.Stdout, "[TEST] ", log.LstdFlags)
 	state := &analysis.State{
-		Documents: make(map[string]protocol.DocumentUri),
+		Documents: make(map[string]lsp.DocumentUri),
 	}
 
 	// Create a new Server
@@ -39,7 +39,7 @@ func TestLSPHandlerCreation(t *testing.T) {
 
 // TestInitializeResultJSON tests that our InitializeResult struct marshals to JSON correctly
 func TestInitializeResultJSON(t *testing.T) {
-	result := protocol.NewInitializeResponse(0)
+	result := lsp.NewInitializeResponse(0)
 
 	// Test that the result can be marshaled to JSON
 	data, err := json.Marshal(result)
@@ -48,7 +48,7 @@ func TestInitializeResultJSON(t *testing.T) {
 	}
 
 	// Unmarshal and verify the contents
-	var unmarshaled protocol.InitializeResult
+	var unmarshaled lsp.InitializeResult
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal InitializeResult: %v", err)
 	}

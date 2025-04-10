@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type CompletionItem struct {
 	Label         string        `json:"label"`

@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type CodeAction struct {
 	Title       string         `json:"title"`

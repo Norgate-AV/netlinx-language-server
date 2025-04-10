@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type ServerInfo struct {
 	Name    string `json:"name"`
@@ -34,8 +34,6 @@ type ServerCapabilities struct {
 	DiagnosticProvider               *DiagnosticOptions               `json:"diagnosticProvider,omitempty"`
 	WorkspaceSymbolProvider          bool                             `json:"workspaceSymbolProvider"`
 }
-
-
 
 type ExecuteCommandOptions struct {
 	Commands []string `json:"commands"`

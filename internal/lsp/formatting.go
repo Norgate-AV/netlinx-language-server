@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type DocumentOnTypeFormattingOptions struct {
 	FirstTriggerCharacter string   `json:"firstTriggerCharacter"`

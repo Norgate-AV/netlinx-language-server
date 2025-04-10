@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type WorkspaceFoldersServerCapabilities struct {
 	Supported           bool `json:"supported,omitempty"`

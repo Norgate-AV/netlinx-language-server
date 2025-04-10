@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type TextDocumentItem struct {
 	URI        DocumentUri `json:"uri"`

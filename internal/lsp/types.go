@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type (
 	DocumentUri = string
@@ -46,24 +46,24 @@ type TextEdit struct {
 }
 
 type TextDocumentEdit struct {
-    TextDocument VersionedTextDocumentIdentifier `json:"textDocument"`
-    Edits        []TextEdit                      `json:"edits"`
+	TextDocument VersionedTextDocumentIdentifier `json:"textDocument"`
+	Edits        []TextEdit                      `json:"edits"`
 }
 
 type FormattingOptions struct {
-    TabSize      int  `json:"tabSize"`
-    InsertSpaces bool `json:"insertSpaces"`
+	TabSize      int  `json:"tabSize"`
+	InsertSpaces bool `json:"insertSpaces"`
 }
 
 type RenameOptions struct {
-    PrepareProvider bool `json:"prepareProvider,omitempty"`
+	PrepareProvider bool `json:"prepareProvider,omitempty"`
 }
 
 type WorkspaceFolder struct {
-    URI  DocumentUri `json:"uri"`
-    Name string      `json:"name"`
+	URI  DocumentUri `json:"uri"`
+	Name string      `json:"name"`
 }
 
 type WorkDoneProgressParams struct {
-    WorkDoneToken LSPAny `json:"workDoneToken,omitempty"`
+	WorkDoneToken LSPAny `json:"workDoneToken,omitempty"`
 }

@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type InitializeRequest struct {
 	Params InitializeRequestParams `json:"params"`

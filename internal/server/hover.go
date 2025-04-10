@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/protocol"
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
 func (s *Server) handleHover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	var params protocol.HoverParams
+	var params lsp.HoverParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.logger.Printf("Error unmarshalling hover params: %v\n", err)
@@ -18,9 +18,9 @@ func (s *Server) handleHover(ctx context.Context, conn *jsonrpc2.Conn, req *json
 		return
 	}
 
-	response := protocol.Hover{
-		Contents: protocol.MarkupContent{
-			Kind:  protocol.MarkupKindMarkdown,
+	response := lsp.Hover{
+		Contents: lsp.MarkupContent{
+			Kind:  lsp.MarkupKindMarkdown,
 			Value: "**NetLinx Language Server**\n\nConnection working correctly!",
 		},
 	}

@@ -1,4 +1,4 @@
-package protocol
+package lsp
 
 type Diagnostic struct {
 	Range              Range                           `json:"range"`

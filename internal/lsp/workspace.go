@@ -21,3 +21,14 @@ type FileEvent struct {
 	URI  DocumentUri `json:"uri"`
 	Type int         `json:"type"`
 }
+
+type FileChangeType = int
+
+const (
+	// Created represents a file that was created
+	Created FileChangeType = 1
+	// Changed represents a file that was changed
+	Changed FileChangeType = 2
+	// Deleted represents a file that was deleted
+	Deleted FileChangeType = 3
+)

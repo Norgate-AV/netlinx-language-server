@@ -56,3 +56,8 @@ type DidCloseTextDocumentParams struct {
 type DocumentLinkOptions struct {
 	ResolveProvider bool `json:"resolveProvider,omitempty"`
 }
+
+type DidSaveTextDocumentParams struct {
+	TextDocument TextDocumentIdentifier `json:"textDocument"`
+	Text         string                 `json:"text,omitempty"`
+}

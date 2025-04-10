@@ -42,6 +42,10 @@ func (s *Server) registerHandlers() *Server {
 	s.handlers["textDocument/didChange"] = s.TextDocumentDidChange
 	s.handlers["textDocument/didClose"] = s.TextDocumentDidClose
 	s.handlers["textDocument/hover"] = s.Hover
+	s.handlers["textDocument/documentSymbol"] = s.TextDocumentSymbol
+	s.handlers["textDocument/diagnostic"] = s.TextDocumentDiagnostic
+	s.handlers["textDocument/didSave"] = s.TextDocumentDidSave
+	// s.handlers["workspace/didChangeWatchedFiles"] = s.WortkspaceDidChangeWatchedFiles
 
 	return s
 }

@@ -13,6 +13,7 @@ type ServerCapabilities struct {
 	CompletionProvider     map[string]any       `json:"completionProvider"`
 	DocumentSymbolProvider bool                 `json:"documentSymbolProvider"`
 	DiagnosticProvider     *DiagnosticOptions   `json:"diagnosticProvider,omitempty"`
+	SemanticTokensProvider *SemanticTokensOptions `json:"semanticTokensProvider,omitempty"`
 }
 
 type DiagnosticOptions struct {

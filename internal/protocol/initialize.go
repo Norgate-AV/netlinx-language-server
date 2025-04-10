@@ -18,6 +18,19 @@ type InitializeResult struct {
 	ServerInfo   ServerInfo         `json:"serverInfo"`
 }
 
+type SemanticTokensClientCapabilities struct {
+	DynamicRegistration bool `json:"dynamicRegistration,omitempty"`
+	Requests            struct {
+		Range bool `json:"range"`
+		Full  bool `json:"full"`
+	} `json:"requests"`
+	TokenTypes              []string `json:"tokenTypes"`
+	TokenModifiers          []string `json:"tokenModifiers"`
+	Formats                 []string `json:"formats"`
+	OverlappingTokenSupport bool     `json:"overlappingTokenSupport,omitempty"`
+	MultilineTokenSupport   bool     `json:"multilineTokenSupport,omitempty"`
+}
+
 func NewInitializeResponse(_ int) InitializeResult {
 	return InitializeResult{
 		Capabilities: ServerCapabilities{

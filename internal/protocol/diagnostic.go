@@ -36,3 +36,8 @@ const (
 type CodeDescription struct {
 	Href URI `json:"href"`
 }
+
+type DiagnosticOptions struct {
+	InterFileDependencies bool `json:"interFileDependencies"`
+	WorkspaceDiagnostics  bool `json:"workspaceDiagnostics"`
+}

@@ -41,6 +41,7 @@ func NewInitializeResponse(_ int) InitializeResult {
 				InterFileDependencies: false,
 				WorkspaceDiagnostics:  false,
 			},
+			// SemanticTokensProvider: &SemanticTokensOptions{
 		},
 		ServerInfo: ServerInfo{
 			Name:    "netlinx-language-server",

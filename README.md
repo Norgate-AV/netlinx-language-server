@@ -20,7 +20,7 @@ The `netlinx-language-server` is a Language Server Protocol (LSP) implementation
 
 ## Team :soccer:
 
-This project is maintained by the following person(s) and a bunch of [awesome contributors](https://github.com/Norgate-AV/tree-sitter-netlinx/graphs/contributors).
+This project is maintained by the following person(s) and a bunch of [awesome contributors](https://github.com/Norgate-AV/netlinx-language-server/graphs/contributors).
 
 <table>
   <tr>

@@ -6,7 +6,15 @@
 
 ---
 
+[![CI][ci]](https://github.com/Norgate-AV/netlinx-language-server/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/Norgate-AV/netlinx-language-server)](https://github.com/Norgate-AV/netlinx-language-server/releases)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+[![GitHub contributors](https://img.shields.io/github/contributors/Norgate-AV/netlinx-language-server)](https://github.com/Norgate-AV/tree-sitter-netlinx/graphs/contributors)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 The `netlinx-language-server` is a Language Server Protocol (LSP) implementation for the NetLinx programming language. This project is currently under development.
+
+[ci]: https://img.shields.io/github/actions/workflow/status/Norgate-AV/netlinx-language-server/ci.yml?logo=github&label=CI
 
 ## Contents :book:
 

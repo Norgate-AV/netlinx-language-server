@@ -3,13 +3,16 @@ package server
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
 func (s *Server) Shutdown(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.logger.Println("Shutdown request received")
+	s.logger.LogServerEvent("Shutdown")
 
 	if err := conn.Reply(ctx, req.ID, nil); err != nil {
-		s.logger.Printf("Error sending shutdown response: %v\n", err)
+		s.logger.Error("Failed to send shutdown response", logrus.Fields{
+			"error": err.Error(),
+		})
 	}
 }

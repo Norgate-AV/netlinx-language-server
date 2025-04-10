@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+	"github.com/sirupsen/logrus"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
@@ -14,22 +15,30 @@ func (s *Server) Initialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 	var params lsp.InitializeRequestParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Printf("Error unmarshalling initialize params: %v\n", err)
-		sendError(ctx, conn, req.ID, createError(jsonrpc2.CodeParseError, fmt.Sprintf("Invalid initialize params: %v", err)))
+		s.logger.Error("Failed to unmarshal initialize params", logrus.Fields{
+			"error": err.Error(),
+		})
+
+		s.sendError(ctx, conn, req.ID, createError(jsonrpc2.CodeParseError, fmt.Sprintf("Invalid initialize params: %v", err)))
 
 		return
 	}
 
-	s.logger.Printf("Connected to: %s %s", params.ClientInfo.Name, params.ClientInfo.Version)
+	s.logger.Info("Client connected", logrus.Fields{
+		"client_name":    params.ClientInfo.Name,
+		"client_version": params.ClientInfo.Version,
+	})
 
 	response := NewInitializeResponse()
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
-		s.logger.Printf("Error sending initialize response: %v\n", err)
+		s.logger.Error("Failed to send initialize response", logrus.Fields{
+			"error": err.Error(),
+		})
 	}
 }
 
 func (s *Server) Initialized(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.logger.Println("Server initialized")
+	s.logger.LogServerEvent("Initialized")
 }
 
 func NewInitializeResponse() lsp.InitializeResult {

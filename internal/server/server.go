@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
-	"log"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	"github.com/sirupsen/logrus"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
@@ -29,8 +29,8 @@ func NewServer(logger logger.Logger, state *analysis.State) *Server {
 }
 
 func (s *Server) Stop() {
-	s.logger.Println("Stopping server...")
-	s.logger.Println("Server stopped")
+	s.logger.LogServerEvent("Stopping")
+	s.logger.LogServerEvent("Stopped")
 }
 
 func (s *Server) registerHandlers() *Server {
@@ -47,21 +47,25 @@ func (s *Server) registerHandlers() *Server {
 }
 
 func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.logger.Printf("Received method: %s\n", req.Method)
+	s.logger.LogRequest(req.Method, req.ID)
 
 	if handler, ok := s.handlers[req.Method]; ok {
 		handler(ctx, conn, req)
 		return
 	}
 
-	s.logger.Printf("Method not implemented: %s\n", req.Method)
+	s.logger.Warn("Method not implemented", logrus.Fields{
+		"method": req.Method,
+	})
 
 	if req.ID == (jsonrpc2.ID{}) {
 		return
 	}
 
 	if err := conn.Reply(ctx, req.ID, nil); err != nil {
-		s.logger.Printf("Error sending reply: %v\n", err)
+		s.logger.Error("Failed to send response", logrus.Fields{
+			"error": err.Error(),
+		})
 	}
 }
 
@@ -72,8 +76,10 @@ func createError(code int64, message string) *jsonrpc2.Error {
 	}
 }
 
-func sendError(ctx context.Context, conn *jsonrpc2.Conn, id jsonrpc2.ID, err *jsonrpc2.Error) {
+func (s *Server) sendError(ctx context.Context, conn *jsonrpc2.Conn, id jsonrpc2.ID, err *jsonrpc2.Error) {
 	if replyErr := conn.ReplyWithError(ctx, id, err); replyErr != nil {
-		log.Printf("Error sending error response: %v\n", replyErr)
+		s.logger.Error("Failed to send error response", logrus.Fields{
+			"error": replyErr.Error(),
+		})
 	}
 }

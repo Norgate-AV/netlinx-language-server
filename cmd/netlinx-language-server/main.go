@@ -75,25 +75,30 @@ func serve(c *cli.Context) error {
 	log, err := logger.NewFileLogger(logFile)
 	if err != nil {
 		log = logger.NewStdLogger()
-		log.Printf("Failed to initialize file logger: %v, falling back to stderr", err)
+		log.Error("Failed to initialize file logger", logrus.Fields{
+			"error":    err.Error(),
+			"fallback": "stderr",
+		})
 	}
 
 	if c.Bool("verbose") {
 		if l := logger.GetLogrusLogger(log); l != nil {
 			l.SetLevel(logrus.DebugLevel)
-			log.Println("Verbose logging enabled")
+			log.Info("Verbose logging enabled", logrus.Fields{
+				"level": "debug",
+			})
 		}
 	}
 
-	log.Println("Started Netlinx Language Server...")
+	log.LogServerEvent("Started Netlinx Language Server...")
 
 	state := analysis.NewState()
 
 	server := server.NewServer(log, state)
 	// defer func() {
-	// 	if err := server.Shutdown(); err != nil {
-	// 		log.Printf("Error shutting down server: %v", err)
-	// 	}
+	// log.Error("Error shutting down server", logrus.Fields{
+	//     "error": err.Error(),
+	// })
 	// }()
 
 	// var connOpt []jsonrpc2.ConnOpt
@@ -101,14 +106,16 @@ func serve(c *cli.Context) error {
 	// 	connOpt = append(connOpt, jsonrpc2.LogMessages(log.New(logWriter, "", 0)))
 	// }
 
-	log.Println("Reading from stdin, writing to stdout")
+	log.LogServerEvent("Reading from stdin, writing to stdout")
+
 	<-jsonrpc2.NewConn(
 		context.Background(),
 		jsonrpc2.NewBufferedStream(&stdinStdout{}, jsonrpc2.VSCodeObjectCodec{}),
 		server,
 		// connOpt...,
 	).DisconnectNotify()
-	log.Println("Connections closed")
+
+	log.LogServerEvent("Connections closed")
 
 	return nil
 }

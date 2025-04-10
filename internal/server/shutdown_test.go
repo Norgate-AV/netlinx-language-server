@@ -6,26 +6,10 @@ import (
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	test "github.com/Norgate-AV/netlinx-language-server/internal/testing"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
-
-// MockConn implements the minimal jsonrpc2.Conn interface needed for testing
-type MockConn struct {
-	// Tracking for Reply calls
-	ReplyCalled bool
-	ReplyID     jsonrpc2.ID
-	ReplyResult interface{}
-	ReplyError  error
-}
-
-// Reply implements the jsonrpc2.Conn Reply method
-func (c *MockConn) Reply(ctx context.Context, id jsonrpc2.ID, result interface{}) error {
-	c.ReplyCalled = true
-	c.ReplyID = id
-	c.ReplyResult = result
-	return c.ReplyError
-}
 
 func (s *Server) TestShutdown(ctx context.Context, conn interface{}, req *jsonrpc2.Request) {
 	// Type assertion to check if conn implements the necessary method
@@ -45,7 +29,7 @@ func TestShutdown(t *testing.T) {
 	state := analysis.NewState()
 	srv := NewServer(log, state)
 
-	mockConn := &MockConn{}
+	mockConn := &test.MockConn{}
 
 	req := &jsonrpc2.Request{
 		ID: jsonrpc2.ID{Num: 1},

@@ -13,7 +13,7 @@ all: fmt lint test build
 build:
 	@echo "Building $(BINARY_NAME) v$(VERSION)..."
 	@mkdir -p $(BUILD_DIR)
-	@go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/netlinx-language-server
+	@go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) .
 
 # Clean build artifacts
 clean:

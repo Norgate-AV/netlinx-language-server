@@ -2,6 +2,7 @@ package analysis
 
 import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
@@ -9,46 +10,19 @@ func (s *State) ExtractSymbols(uri string) ([]lsp.DocumentSymbol, error) {
 	// Get the syntax tree using your existing parser
 	tree, ok := s.GetSyntaxTree(uri)
 	if !ok {
-		// s.Logger.Debug("No syntax tree found for "+uri, logrus.Fields{})
 		return []lsp.DocumentSymbol{}, nil
 	}
 
 	root := tree.RootNode()
 	if root == nil {
-		// s.Logger.Debug("Root node is nil for "+uri, logrus.Fields{})
 		return []lsp.DocumentSymbol{}, nil
 	}
-
-	s.Logger.Printf("DEBUG: We have a root node for %s", uri)
-
-	// s.Logger.Printf("DEBUG: Root node kind: %s", root.Kind())
 
 	// Get the document content for text extraction
 	content, ok := s.GetDocument(uri)
 	if !ok {
-		// s.Logger.Printf("DEBUG: No content found for %s", uri)
 		return []lsp.DocumentSymbol{}, nil
 	}
-
-	// Debug functions - add at top of file
-	// dumpNode := func(node *tree_sitter.Node, prefix string) {
-	// 	if node == nil {
-	// 		return
-	// 	}
-	// 	log.Printf("%sNode kind: %s, text: %s",
-	// 		prefix,
-	// 		node.Kind(),
-	// 		getNodeText(node, []byte(content))[0:min(30, len(getNodeText(node, []byte(content))))])
-
-	// 	for i := uint(0); i < node.ChildCount(); i++ {
-	// 		child := node.Child(i)
-	// 		dumpNode(child, prefix+"  ")
-	// 	}
-	// }
-
-	// // Dump the first few levels to see structure
-	// log.Printf("DEBUG: Dumping AST structure")
-	// dumpNode(root, "")
 
 	// Walk the AST and extract symbols
 	symbols := []lsp.DocumentSymbol{}

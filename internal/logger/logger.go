@@ -3,6 +3,7 @@ package logger
 import (
 	"os"
 
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,6 +16,7 @@ type Logger interface {
 	Warn(msg string, fields logrus.Fields)
 	Error(msg string, fields logrus.Fields)
 
+	LogMessage(method string, id any)
 	LogRequest(method string, id any)
 	LogResponse(method string, id any)
 	LogNotification(method string)
@@ -80,6 +82,14 @@ func (l *StructuredLogger) Info(msg string, fields logrus.Fields) {
 
 	fields["component"] = l.Component
 	l.Log.WithFields(logrus.Fields(fields)).Info(msg)
+}
+
+func (l *StructuredLogger) LogMessage(method string, id any) {
+	if lsp.IsNotification(method) {
+		l.LogNotification(method)
+	} else {
+		l.LogRequest(method, id)
+	}
 }
 
 func (l *StructuredLogger) LogRequest(method string, id any) {

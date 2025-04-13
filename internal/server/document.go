@@ -91,6 +91,7 @@ func (s *Server) TextDocumentDiagnostic(ctx context.Context, conn *jsonrpc2.Conn
 
 func (s *Server) TextDocumentSymbol(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
 	var params lsp.DocumentSymbolParams
+
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
 			"method": "textDocument/documentSymbol",

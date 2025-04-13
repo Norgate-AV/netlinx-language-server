@@ -51,7 +51,7 @@ func (s *Server) registerHandlers() *Server {
 }
 
 func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.Logger.LogRequest(req.Method, req.ID)
+	s.Logger.LogMessage(req.Method, req.ID)
 
 	if handler, ok := s.handlers[req.Method]; ok {
 		handler(ctx, conn, req)

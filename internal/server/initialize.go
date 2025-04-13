@@ -39,7 +39,6 @@ func (s *Server) Initialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 }
 
 func (s *Server) Initialized(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.Logger.LogNotification(req.Method)
 	s.Logger.LogServerEvent("Initialized")
 }
 

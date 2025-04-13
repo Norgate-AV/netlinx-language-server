@@ -51,14 +51,14 @@ func TestTextDocumentDidOpen(t *testing.T) {
 	srv.TextDocumentDidOpen(context.Background(), nil, req)
 
 	// Verify document was added to state
-	content, exists := state.GetDocument("file:///test.axs")
+	document, exists := state.GetDocument("file:///test.axs")
 	if !exists {
 		t.Fatal("Document was not added to state")
 	}
 
 	expectedContent := "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x"
-	if content != expectedContent {
-		t.Fatalf("Document content mismatch.\nExpected: %q\nGot: %q", expectedContent, content)
+	if document.Content != expectedContent {
+		t.Fatalf("Document content mismatch.\nExpected: %q\nGot: %q", expectedContent, document.Content)
 	}
 }
 
@@ -109,14 +109,14 @@ func TestTextDocumentDidChange(t *testing.T) {
 	srv.TextDocumentDidChange(context.Background(), nil, req)
 
 	// Verify document was updated in state
-	content, exists := state.GetDocument("file:///test.axs")
+	document, exists := state.GetDocument("file:///test.axs")
 	if !exists {
 		t.Fatal("Document not found in state after update")
 	}
 
 	expectedContent := "PROGRAM_NAME='Updated'\nDEFINE_VARIABLE\nINTEGER x, y"
-	if content != expectedContent {
-		t.Fatalf("Document content mismatch after update.\nExpected: %q\nGot: %q", expectedContent, content)
+	if document.Content != expectedContent {
+		t.Fatalf("Document content mismatch after update.\nExpected: %q\nGot: %q", expectedContent, document.Content)
 	}
 }
 

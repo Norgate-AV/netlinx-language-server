@@ -7,20 +7,13 @@ import (
 )
 
 func (s *State) ExtractSymbols(uri string) ([]lsp.DocumentSymbol, error) {
-	// Get the syntax tree using your existing parser
-	tree, ok := s.GetSyntaxTree(uri)
+	document, ok := s.GetDocument(uri)
 	if !ok {
 		return []lsp.DocumentSymbol{}, nil
 	}
 
-	root := tree.RootNode()
+	root := document.Tree.RootNode()
 	if root == nil {
-		return []lsp.DocumentSymbol{}, nil
-	}
-
-	// Get the document content for text extraction
-	content, ok := s.GetDocument(uri)
-	if !ok {
 		return []lsp.DocumentSymbol{}, nil
 	}
 
@@ -32,7 +25,7 @@ func (s *State) ExtractSymbols(uri string) ([]lsp.DocumentSymbol, error) {
 	if programNameNode != nil {
 		valueNode := findChildByType(programNameNode, "string")
 		if valueNode != nil {
-			name := getNodeText(valueNode, []byte(content))
+			name := getNodeText(valueNode, []byte(document.Content))
 			// Remove quotes from string
 			if len(name) > 2 {
 				name = name[1 : len(name)-1]
@@ -55,7 +48,7 @@ func (s *State) ExtractSymbols(uri string) ([]lsp.DocumentSymbol, error) {
 			sectionSymbol := createSymbol(sectionName, lsp.SymbolKindNamespace, sectionNode)
 
 			// Find declarations within this section
-			childSymbols := extractDeclarations(sectionNode, []byte(content))
+			childSymbols := extractDeclarations(sectionNode, []byte(document.Content))
 			sectionSymbol.Children = childSymbols
 
 			symbols = append(symbols, sectionSymbol)
@@ -65,7 +58,7 @@ func (s *State) ExtractSymbols(uri string) ([]lsp.DocumentSymbol, error) {
 	// Extract functions
 	functionNodes := findNodes(root, "function_declaration")
 	for _, funcNode := range functionNodes {
-		symbol := extractFunctionSymbol(funcNode, []byte(content))
+		symbol := extractFunctionSymbol(funcNode, []byte(document.Content))
 		symbols = append(symbols, symbol)
 	}
 

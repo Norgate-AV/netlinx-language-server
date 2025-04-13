@@ -26,19 +26,19 @@ func TestDocumentManagement(t *testing.T) {
 	state.AddDocument("file:///test.axs", "content")
 
 	// Test retrieving a document
-	content, ok := state.GetDocument("file:///test.axs")
+	document, ok := state.GetDocument("file:///test.axs")
 	if !ok {
 		t.Fatal("Expected document to exist")
 	}
-	if content != "content" {
-		t.Errorf("Expected content 'content', got '%s'", content)
+	if document.Content != "content" {
+		t.Errorf("Expected content 'content', got '%s'", document.Content)
 	}
 
 	// Test updating a document
 	state.UpdateDocument("file:///test.axs", "updated")
-	content, _ = state.GetDocument("file:///test.axs")
-	if content != "updated" {
-		t.Errorf("Expected content 'updated', got '%s'", content)
+	document, _ = state.GetDocument("file:///test.axs")
+	if document.Content != "updated" {
+		t.Errorf("Expected content 'updated', got '%s'", document.Content)
 	}
 
 	// Test closing a document

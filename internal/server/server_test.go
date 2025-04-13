@@ -34,13 +34,13 @@ func TestLSPHandlerCreation(t *testing.T) {
 
 	state.AddDocument("file:///test.axs", "test content")
 
-	content, ok := state.GetDocument("file:///test.axs")
+	document, ok := state.GetDocument("file:///test.axs")
 	if !ok {
 		t.Fatal("Expected document to be added to state")
 	}
 
-	if content != "test content" {
-		t.Errorf("Expected document content 'test content', got '%s'", content)
+	if document.Content != "test content" {
+		t.Errorf("Expected document content 'test content', got '%s'", document.Content)
 	}
 }
 

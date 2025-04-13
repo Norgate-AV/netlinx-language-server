@@ -1,4 +1,4 @@
-package server
+package server_test
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
@@ -15,8 +17,19 @@ import (
 func TestTextDocumentDidOpen(t *testing.T) {
 	// Setup
 	log := logger.NewStdLogger()
-	state := analysis.NewState()
-	srv := NewServer(log, state)
+	ts, err := parser.NewTreeSitter()
+	if err != nil {
+		t.Fatalf("Failed to create parser: %v", err)
+	}
+
+	defer ts.Close()
+
+	state := analysis.NewState(&analysis.NewStateOptions{
+		TreeSitter: ts,
+		Logger:     log,
+	})
+
+	srv := server.NewServer(log, state)
 
 	// Create test document parameters
 	params := lsp.DidOpenTextDocumentParams{
@@ -52,8 +65,19 @@ func TestTextDocumentDidOpen(t *testing.T) {
 func TestTextDocumentDidChange(t *testing.T) {
 	// Setup
 	log := logger.NewStdLogger()
-	state := analysis.NewState()
-	srv := NewServer(log, state)
+	ts, err := parser.NewTreeSitter()
+	if err != nil {
+		t.Fatalf("Failed to create parser: %v", err)
+	}
+
+	defer ts.Close()
+
+	state := analysis.NewState(&analysis.NewStateOptions{
+		TreeSitter: ts,
+		Logger:     log,
+	})
+
+	srv := server.NewServer(log, state)
 
 	// First add a document to the state
 	state.AddDocument("file:///test.axs", "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
@@ -99,8 +123,19 @@ func TestTextDocumentDidChange(t *testing.T) {
 func TestTextDocumentDidClose(t *testing.T) {
 	// Setup
 	log := logger.NewStdLogger()
-	state := analysis.NewState()
-	srv := NewServer(log, state)
+	ts, err := parser.NewTreeSitter()
+	if err != nil {
+		t.Fatalf("Failed to create parser: %v", err)
+	}
+
+	defer ts.Close()
+
+	state := analysis.NewState(&analysis.NewStateOptions{
+		TreeSitter: ts,
+		Logger:     log,
+	})
+
+	srv := server.NewServer(log, state)
 
 	// First add a document to the state
 	state.AddDocument("file:///test.axs", "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
@@ -133,8 +168,19 @@ func TestTextDocumentDidClose(t *testing.T) {
 func TestInvalidParameters(t *testing.T) {
 	// Setup
 	log := logger.NewStdLogger()
-	state := analysis.NewState()
-	srv := NewServer(log, state)
+	ts, err := parser.NewTreeSitter()
+	if err != nil {
+		t.Fatalf("Failed to create parser: %v", err)
+	}
+
+	defer ts.Close()
+
+	state := analysis.NewState(&analysis.NewStateOptions{
+		TreeSitter: ts,
+		Logger:     log,
+	})
+
+	srv := server.NewServer(log, state)
 
 	// Test cases with invalid JSON
 	testCases := []struct {

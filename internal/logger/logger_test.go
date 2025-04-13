@@ -1,4 +1,4 @@
-package logger
+package logger_test
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 
 	"github.com/sirupsen/logrus"
 )
@@ -15,7 +17,7 @@ func TestLoggerOutput(t *testing.T) {
 
 	log := logrus.New()
 	log.SetOutput(&buf)
-	log.SetFormatter(getFormatter())
+	log.SetFormatter(logger.GetFormatter())
 
 	log.Info("Test message")
 
@@ -38,16 +40,16 @@ func TestStructuredLoggerOutput(t *testing.T) {
 		DisableTimestamp: true,
 	})
 
-	structLog := &StructuredLogger{
-		log:       log,
-		component: "test-component",
+	structLog := &logger.StructuredLogger{
+		Log:       log,
+		Component: "test-component",
 	}
 
 	structLog.Info("Test info message", logrus.Fields{
 		"custom_field": "custom_value",
 	})
 
-	var output map[string]interface{}
+	var output map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &output); err != nil {
 		t.Fatalf("Failed to parse log output: %v", err)
 	}
@@ -73,15 +75,15 @@ func TestStructuredLoggerOutput(t *testing.T) {
 func TestSpecializedLogMethods(t *testing.T) {
 	tests := []struct {
 		name           string
-		logFunc        func(logger *StructuredLogger)
-		expectedFields map[string]interface{}
+		logFunc        func(logger *logger.StructuredLogger)
+		expectedFields map[string]any
 	}{
 		{
 			name: "LogRequest",
-			logFunc: func(logger *StructuredLogger) {
+			logFunc: func(logger *logger.StructuredLogger) {
 				logger.LogRequest("initialize", 1)
 			},
-			expectedFields: map[string]interface{}{
+			expectedFields: map[string]any{
 				"msg":       "Request received",
 				"type":      "request",
 				"method":    "initialize",
@@ -92,10 +94,10 @@ func TestSpecializedLogMethods(t *testing.T) {
 		},
 		{
 			name: "LogResponse",
-			logFunc: func(logger *StructuredLogger) {
+			logFunc: func(logger *logger.StructuredLogger) {
 				logger.LogResponse("initialize", 1)
 			},
-			expectedFields: map[string]interface{}{
+			expectedFields: map[string]any{
 				"msg":       "Response sent",
 				"type":      "response",
 				"method":    "initialize",
@@ -106,10 +108,10 @@ func TestSpecializedLogMethods(t *testing.T) {
 		},
 		{
 			name: "LogNotification",
-			logFunc: func(logger *StructuredLogger) {
+			logFunc: func(logger *logger.StructuredLogger) {
 				logger.LogNotification("exit")
 			},
-			expectedFields: map[string]interface{}{
+			expectedFields: map[string]any{
 				"msg":       "Notification received",
 				"type":      "notification",
 				"method":    "exit",
@@ -119,10 +121,10 @@ func TestSpecializedLogMethods(t *testing.T) {
 		},
 		{
 			name: "LogDocumentEvent",
-			logFunc: func(logger *StructuredLogger) {
+			logFunc: func(logger *logger.StructuredLogger) {
 				logger.LogDocumentEvent("open", "file:///test.axs")
 			},
-			expectedFields: map[string]interface{}{
+			expectedFields: map[string]any{
 				"msg":       "Document event",
 				"action":    "open",
 				"uri":       "file:///test.axs",
@@ -132,10 +134,10 @@ func TestSpecializedLogMethods(t *testing.T) {
 		},
 		{
 			name: "LogServerEvent",
-			logFunc: func(logger *StructuredLogger) {
+			logFunc: func(logger *logger.StructuredLogger) {
 				logger.LogServerEvent("Starting")
 			},
-			expectedFields: map[string]interface{}{
+			expectedFields: map[string]any{
 				"msg":        "Starting",
 				"event_type": "server_lifecycle",
 				"level":      "info",
@@ -154,14 +156,14 @@ func TestSpecializedLogMethods(t *testing.T) {
 				DisableTimestamp: true,
 			})
 
-			structLog := &StructuredLogger{
-				log:       log,
-				component: "test-component",
+			structLog := &logger.StructuredLogger{
+				Log:       log,
+				Component: "test-component",
 			}
 
 			test.logFunc(structLog)
 
-			var output map[string]interface{}
+			var output map[string]any
 			if err := json.Unmarshal(buf.Bytes(), &output); err != nil {
 				t.Fatalf("Failed to parse log output: %v", err)
 			}
@@ -185,16 +187,16 @@ func TestWithComponent(t *testing.T) {
 		DisableTimestamp: true,
 	})
 
-	baseLogger := &StructuredLogger{
-		log:       log,
-		component: "base",
+	baseLogger := &logger.StructuredLogger{
+		Log:       log,
+		Component: "base",
 	}
 
 	// Create derived logger with new component
 	derivedLogger := baseLogger.WithComponent("derived")
 	derivedLogger.Info("Test component message", nil)
 
-	var output map[string]interface{}
+	var output map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &output); err != nil {
 		t.Fatalf("Failed to parse log output: %v", err)
 	}
@@ -215,7 +217,7 @@ func TestFileLogger(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 
-	logger, err := NewFileLogger(tmpFile.Name())
+	logger, err := logger.NewFileLogger(tmpFile.Name())
 	if err != nil {
 		t.Fatalf("Failed to create file logger: %v", err)
 	}

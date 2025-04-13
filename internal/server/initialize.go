@@ -15,7 +15,7 @@ func (s *Server) Initialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 	var params lsp.InitializeRequestParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal initialize params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal initialize params", logrus.Fields{
 			"error": err.Error(),
 		})
 
@@ -24,21 +24,21 @@ func (s *Server) Initialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 		return
 	}
 
-	s.logger.Info("Client connected", logrus.Fields{
+	s.Logger.Info("Client connected", logrus.Fields{
 		"client_name":    params.ClientInfo.Name,
 		"client_version": params.ClientInfo.Version,
 	})
 
 	response := NewInitializeResponse()
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
-		s.logger.Error("Failed to send initialize response", logrus.Fields{
+		s.Logger.Error("Failed to send initialize response", logrus.Fields{
 			"error": err.Error(),
 		})
 	}
 }
 
 func (s *Server) Initialized(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.logger.LogServerEvent("Initialized")
+	s.Logger.LogServerEvent("Initialized")
 }
 
 func NewInitializeResponse() lsp.InitializeResult {

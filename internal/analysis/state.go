@@ -5,20 +5,28 @@ import (
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
-	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
+	"github.com/Norgate-AV/netlinx-language-server/parser"
+
+	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 type State struct {
-	Documents map[string]lsp.DocumentUri
-	Parser    *parser.Parser
-	mutex     sync.RWMutex
-	Logger    logger.Logger
+	Documents  map[string]lsp.DocumentUri
+	TreeSitter *parser.TreeSitter
+	mutex      sync.RWMutex
+	Logger     logger.Logger
 }
 
-func NewState() *State {
+type NewStateOptions struct {
+	Logger     logger.Logger
+	TreeSitter *parser.TreeSitter
+}
+
+func NewState(options *NewStateOptions) *State {
 	return &State{
-		Documents: make(map[string]lsp.DocumentUri),
-		Parser:    parser.NewParser(),
+		Documents:  make(map[string]lsp.DocumentUri),
+		TreeSitter: options.TreeSitter,
+		Logger:     options.Logger,
 	}
 }
 
@@ -52,7 +60,7 @@ func (s *State) CloseDocument(uri string) {
 	delete(s.Documents, uri)
 }
 
-func (s *State) GetSyntaxTree(uri string) (*parser.Tree, bool) {
+func (s *State) GetSyntaxTree(uri string) (*tree_sitter.Tree, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -61,8 +69,8 @@ func (s *State) GetSyntaxTree(uri string) (*parser.Tree, bool) {
 		return nil, false
 	}
 
-	tree, err := s.Parser.Parse([]byte(content))
-	if err != nil {
+	tree := s.TreeSitter.Parser.Parse([]byte(content), nil)
+	if tree == nil {
 		return nil, false
 	}
 

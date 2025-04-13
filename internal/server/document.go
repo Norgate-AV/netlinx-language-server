@@ -14,14 +14,14 @@ func (s *Server) TextDocumentDidOpen(ctx context.Context, conn *jsonrpc2.Conn, r
 	var params lsp.DidOpenTextDocumentParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal document params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
 			"method": "textDocument/didOpen",
 			"error":  err.Error(),
 		})
 		return
 	}
 
-	s.logger.LogDocumentEvent("open", params.TextDocument.URI)
+	s.Logger.LogDocumentEvent("open", params.TextDocument.URI)
 	s.state.AddDocument(params.TextDocument.URI, params.TextDocument.Text)
 }
 
@@ -29,7 +29,7 @@ func (s *Server) TextDocumentDidChange(ctx context.Context, conn *jsonrpc2.Conn,
 	var params lsp.DidChangeTextDocumentParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal document params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
 			"method": "textDocument/didChange",
 			"error":  err.Error(),
 		})
@@ -37,7 +37,7 @@ func (s *Server) TextDocumentDidChange(ctx context.Context, conn *jsonrpc2.Conn,
 		return
 	}
 
-	s.logger.LogDocumentEvent("change", params.TextDocument.URI)
+	s.Logger.LogDocumentEvent("change", params.TextDocument.URI)
 	if len(params.ContentChanges) > 0 {
 		s.state.UpdateDocument(params.TextDocument.URI, params.ContentChanges[0].Text)
 	}
@@ -47,7 +47,7 @@ func (s *Server) TextDocumentDidClose(ctx context.Context, conn *jsonrpc2.Conn, 
 	var params lsp.DidCloseTextDocumentParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal document params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
 			"method": "textDocument/didClose",
 			"error":  err.Error(),
 		})
@@ -55,7 +55,7 @@ func (s *Server) TextDocumentDidClose(ctx context.Context, conn *jsonrpc2.Conn, 
 		return
 	}
 
-	s.logger.LogDocumentEvent("close", params.TextDocument.URI)
+	s.Logger.LogDocumentEvent("close", params.TextDocument.URI)
 	s.state.CloseDocument(params.TextDocument.URI)
 }
 
@@ -63,7 +63,7 @@ func (s *Server) TextDocumentDidSave(ctx context.Context, conn *jsonrpc2.Conn, r
 	var params lsp.DidSaveTextDocumentParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal document params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
 			"method": "textDocument/didSave",
 			"error":  err.Error(),
 		})
@@ -71,14 +71,14 @@ func (s *Server) TextDocumentDidSave(ctx context.Context, conn *jsonrpc2.Conn, r
 		return
 	}
 
-	s.logger.LogDocumentEvent("save", params.TextDocument.URI)
+	s.Logger.LogDocumentEvent("save", params.TextDocument.URI)
 }
 
 func (s *Server) TextDocumentDiagnostic(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
 	var params lsp.PublishDiagnosticsParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal document params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
 			"method": "textDocument/diagnostic",
 			"error":  err.Error(),
 		})
@@ -86,13 +86,13 @@ func (s *Server) TextDocumentDiagnostic(ctx context.Context, conn *jsonrpc2.Conn
 		return
 	}
 
-	s.logger.LogDocumentEvent("diagnostic", params.URI)
+	s.Logger.LogDocumentEvent("diagnostic", params.URI)
 }
 
 func (s *Server) TextDocumentSymbol(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
 	var params lsp.DocumentSymbolParams
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal document params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
 			"method": "textDocument/documentSymbol",
 			"error":  err.Error(),
 		})
@@ -100,11 +100,11 @@ func (s *Server) TextDocumentSymbol(ctx context.Context, conn *jsonrpc2.Conn, re
 		return
 	}
 
-	s.logger.LogDocumentEvent("symbol", params.TextDocument.URI)
+	s.Logger.LogDocumentEvent("symbol", params.TextDocument.URI)
 
 	// symbols, err := s.state.ExtractSymbols(params.TextDocument.URI)
 	// if err != nil {
-	// 	s.logger.Error("Failed to extract symbols", logrus.Fields{
+	// 	s.Logger.Error("Failed to extract symbols", logrus.Fields{
 	// 		"uri":   params.TextDocument.URI,
 	// 		"error": err.Error(),
 	// 	})
@@ -117,7 +117,7 @@ func (s *Server) TextDocumentSymbol(ctx context.Context, conn *jsonrpc2.Conn, re
 
 	// Send response
 	if err := conn.Reply(ctx, req.ID, symbols); err != nil {
-		s.logger.Error("Failed to send symbol response", logrus.Fields{
+		s.Logger.Error("Failed to send symbol response", logrus.Fields{
 			"error": err.Error(),
 		})
 	}

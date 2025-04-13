@@ -7,26 +7,26 @@ import (
 )
 
 type Logger interface {
-	Printf(format string, v ...interface{})
-	Println(v ...interface{})
+	Printf(format string, v ...any)
+	Println(v ...any)
 
 	Debug(msg string, fields logrus.Fields)
 	Info(msg string, fields logrus.Fields)
 	Warn(msg string, fields logrus.Fields)
 	Error(msg string, fields logrus.Fields)
 
-	LogRequest(method string, id interface{})
-	LogResponse(method string, id interface{})
+	LogRequest(method string, id any)
+	LogResponse(method string, id any)
 	LogNotification(method string)
 	LogDocumentEvent(event string, uri string)
 	LogServerEvent(event string)
 
-	WithComponent(component string) Logger
+	WithComponent(Component string) Logger
 }
 
 type StructuredLogger struct {
-	log       *logrus.Logger
-	component string
+	Log       *logrus.Logger
+	Component string
 }
 
 func NewFileLogger(fileName string) (*StructuredLogger, error) {
@@ -38,11 +38,11 @@ func NewFileLogger(fileName string) (*StructuredLogger, error) {
 	}
 
 	log.SetOutput(file)
-	log.SetFormatter(getFormatter())
+	log.SetFormatter(GetFormatter())
 
 	return &StructuredLogger{
-		log:       log,
-		component: "server",
+		Log:       log,
+		Component: "server",
 	}, nil
 }
 
@@ -50,26 +50,26 @@ func NewStdLogger() *StructuredLogger {
 	log := logrus.New()
 
 	log.SetOutput(os.Stderr)
-	log.SetFormatter(getFormatter())
+	log.SetFormatter(GetFormatter())
 
 	return &StructuredLogger{
-		log:       log,
-		component: "server",
+		Log:       log,
+		Component: "server",
 	}
 }
 
 func GetLogrusLogger(log Logger) *logrus.Logger {
 	if sl, ok := log.(*StructuredLogger); ok {
-		return sl.log
+		return sl.Log
 	}
 
 	return nil
 }
 
-func (l *StructuredLogger) WithComponent(component string) Logger {
+func (l *StructuredLogger) WithComponent(Component string) Logger {
 	return &StructuredLogger{
-		log:       l.log,
-		component: component,
+		Log:       l.Log,
+		Component: Component,
 	}
 }
 
@@ -78,11 +78,11 @@ func (l *StructuredLogger) Info(msg string, fields logrus.Fields) {
 		fields = logrus.Fields{}
 	}
 
-	fields["component"] = l.component
-	l.log.WithFields(logrus.Fields(fields)).Info(msg)
+	fields["component"] = l.Component
+	l.Log.WithFields(logrus.Fields(fields)).Info(msg)
 }
 
-func (l *StructuredLogger) LogRequest(method string, id interface{}) {
+func (l *StructuredLogger) LogRequest(method string, id any) {
 	l.Info("Request received", logrus.Fields{
 		"type":   "request",
 		"method": method,
@@ -90,7 +90,7 @@ func (l *StructuredLogger) LogRequest(method string, id interface{}) {
 	})
 }
 
-func (l *StructuredLogger) LogResponse(method string, id interface{}) {
+func (l *StructuredLogger) LogResponse(method string, id any) {
 	l.Info("Response sent", logrus.Fields{
 		"type":   "response",
 		"method": method,
@@ -118,12 +118,12 @@ func (l *StructuredLogger) LogServerEvent(event string) {
 	})
 }
 
-func (l *StructuredLogger) Printf(format string, v ...interface{}) {
-	l.log.Printf(format, v...)
+func (l *StructuredLogger) Printf(format string, v ...any) {
+	l.Log.Printf(format, v...)
 }
 
-func (l *StructuredLogger) Println(v ...interface{}) {
-	l.log.Println(v...)
+func (l *StructuredLogger) Println(v ...any) {
+	l.Log.Println(v...)
 }
 
 func (l *StructuredLogger) Debug(msg string, fields logrus.Fields) {
@@ -131,8 +131,8 @@ func (l *StructuredLogger) Debug(msg string, fields logrus.Fields) {
 		fields = logrus.Fields{}
 	}
 
-	fields["component"] = l.component
-	l.log.WithFields(fields).Debug(msg)
+	fields["component"] = l.Component
+	l.Log.WithFields(fields).Debug(msg)
 }
 
 func (l *StructuredLogger) Warn(msg string, fields logrus.Fields) {
@@ -140,8 +140,8 @@ func (l *StructuredLogger) Warn(msg string, fields logrus.Fields) {
 		fields = logrus.Fields{}
 	}
 
-	fields["component"] = l.component
-	l.log.WithFields(fields).Warn(msg)
+	fields["component"] = l.Component
+	l.Log.WithFields(fields).Warn(msg)
 }
 
 func (l *StructuredLogger) Error(msg string, fields logrus.Fields) {
@@ -149,6 +149,6 @@ func (l *StructuredLogger) Error(msg string, fields logrus.Fields) {
 		fields = logrus.Fields{}
 	}
 
-	fields["component"] = l.component
-	l.log.WithFields(fields).Error(msg)
+	fields["component"] = l.Component
+	l.Log.WithFields(fields).Error(msg)
 }

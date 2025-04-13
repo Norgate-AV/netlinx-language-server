@@ -8,10 +8,10 @@ import (
 )
 
 func (s *Server) Shutdown(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.logger.LogServerEvent("Shutdown")
+	s.Logger.LogServerEvent("Shutdown")
 
 	if err := conn.Reply(ctx, req.ID, nil); err != nil {
-		s.logger.Error("Failed to send shutdown response", logrus.Fields{
+		s.Logger.Error("Failed to send shutdown response", logrus.Fields{
 			"error": err.Error(),
 		})
 	}

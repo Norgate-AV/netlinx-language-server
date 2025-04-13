@@ -1,11 +1,26 @@
-package analysis
+package analysis_test
 
 import (
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
+	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	"github.com/Norgate-AV/netlinx-language-server/parser"
 )
 
 func TestDocumentManagement(t *testing.T) {
-	state := NewState()
+	log := logger.NewStdLogger()
+	ts, err := parser.NewTreeSitter()
+	if err != nil {
+		t.Fatalf("Failed to create parser: %v", err)
+	}
+
+	defer ts.Close()
+
+	state := analysis.NewState(&analysis.NewStateOptions{
+		TreeSitter: ts,
+		Logger:     log,
+	})
 
 	// Test adding a document
 	state.AddDocument("file:///test.axs", "content")

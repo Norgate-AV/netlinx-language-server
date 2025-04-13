@@ -1,14 +1,16 @@
-package server
+package server_test
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 )
 
 func TestInitializeResponseFormat(t *testing.T) {
 	// Get the initialize response
-	response := NewInitializeResponse()
+	response := server.NewInitializeResponse()
 
 	// Marshal to JSON
 	data, err := json.Marshal(response)

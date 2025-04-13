@@ -8,15 +8,26 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
 
 func TestLSPHandlerCreation(t *testing.T) {
-	logger := logger.NewStdLogger()
-	state := analysis.NewState()
+	log := logger.NewStdLogger()
+	ts, err := parser.NewTreeSitter()
+	if err != nil {
+		t.Fatalf("Failed to create parser: %v", err)
+	}
 
-	server := server.NewServer(logger, state)
+	defer ts.Close()
+
+	state := analysis.NewState(&analysis.NewStateOptions{
+		TreeSitter: ts,
+		Logger:     log,
+	})
+
+	server := server.NewServer(log, state)
 	if server == nil {
 		t.Fatal("Expected non-nil handler")
 	}

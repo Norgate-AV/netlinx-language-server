@@ -25,7 +25,7 @@ func (f *PrefixFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func getFormatter() *PrefixFormatter {
+func GetFormatter() *PrefixFormatter {
 	return &PrefixFormatter{
 		Prefix: "[netlinx-language-server]",
 		Formatter: &logrus.TextFormatter{

@@ -13,14 +13,14 @@ import (
 type handler func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request)
 
 type Server struct {
-	logger   logger.Logger
+	Logger   logger.Logger
 	state    *analysis.State
 	handlers map[string]handler
 }
 
 func NewServer(logger logger.Logger, state *analysis.State) *Server {
 	handler := &Server{
-		logger:   logger,
+		Logger:   logger,
 		state:    state,
 		handlers: make(map[string]handler),
 	}
@@ -29,8 +29,8 @@ func NewServer(logger logger.Logger, state *analysis.State) *Server {
 }
 
 func (s *Server) Stop() {
-	s.logger.LogServerEvent("Stopping")
-	s.logger.LogServerEvent("Stopped")
+	s.Logger.LogServerEvent("Stopping")
+	s.Logger.LogServerEvent("Stopped")
 }
 
 func (s *Server) registerHandlers() *Server {
@@ -51,14 +51,14 @@ func (s *Server) registerHandlers() *Server {
 }
 
 func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
-	s.logger.LogRequest(req.Method, req.ID)
+	s.Logger.LogRequest(req.Method, req.ID)
 
 	if handler, ok := s.handlers[req.Method]; ok {
 		handler(ctx, conn, req)
 		return
 	}
 
-	s.logger.Warn("Method not implemented", logrus.Fields{
+	s.Logger.Warn("Method not implemented", logrus.Fields{
 		"method": req.Method,
 	})
 
@@ -67,7 +67,7 @@ func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 	}
 
 	if err := conn.Reply(ctx, req.ID, nil); err != nil {
-		s.logger.Error("Failed to send response", logrus.Fields{
+		s.Logger.Error("Failed to send response", logrus.Fields{
 			"error": err.Error(),
 		})
 	}
@@ -82,7 +82,7 @@ func createError(code int64, message string) *jsonrpc2.Error {
 
 func (s *Server) sendError(ctx context.Context, conn *jsonrpc2.Conn, id jsonrpc2.ID, err *jsonrpc2.Error) {
 	if replyErr := conn.ReplyWithError(ctx, id, err); replyErr != nil {
-		s.logger.Error("Failed to send error response", logrus.Fields{
+		s.Logger.Error("Failed to send error response", logrus.Fields{
 			"error": replyErr.Error(),
 		})
 	}

@@ -15,7 +15,7 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 	var params lsp.HoverParams
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
-		s.logger.Error("Failed to unmarshal hover params", logrus.Fields{
+		s.Logger.Error("Failed to unmarshal hover params", logrus.Fields{
 			"error": err.Error(),
 		})
 
@@ -26,7 +26,7 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 
 	_, ok := s.state.GetDocument(params.TextDocument.URI)
 	if !ok {
-		s.logger.Warn("Document not found for hover", logrus.Fields{
+		s.Logger.Warn("Document not found for hover", logrus.Fields{
 			"uri": params.TextDocument.URI,
 		})
 
@@ -42,7 +42,7 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 	}
 
 	if response == nil {
-		s.logger.Warn("No hover information found", logrus.Fields{
+		s.Logger.Warn("No hover information found", logrus.Fields{
 			"uri":      params.TextDocument.URI,
 			"position": params.Position,
 		})
@@ -53,7 +53,7 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 	}
 
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
-		s.logger.Error("Failed to send hover response", logrus.Fields{
+		s.Logger.Error("Failed to send hover response", logrus.Fields{
 			"error": err.Error(),
 		})
 	}

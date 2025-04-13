@@ -8,6 +8,7 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/jsonrpc2"
@@ -92,14 +93,27 @@ func serve(c *cli.Context) error {
 
 	log.LogServerEvent("Started Netlinx Language Server...")
 
-	state := analysis.NewState()
+	ts, err := parser.NewTreeSitter()
+	if err != nil {
+		log.Error("Failed to create parser", logrus.Fields{
+			"error": err.Error(),
+		})
+
+		return err
+	}
+
+	defer ts.Close()
+
+	state := analysis.NewState(&analysis.NewStateOptions{
+		TreeSitter: ts,
+		Logger:     log,
+	})
 
 	server := server.NewServer(log, state)
-	// defer func() {
-	// log.Error("Error shutting down server", logrus.Fields{
-	//     "error": err.Error(),
-	// })
-	// }()
+	defer func() {
+		log.LogServerEvent("Shutting down server...")
+		server.Stop()
+	}()
 
 	// var connOpt []jsonrpc2.ConnOpt
 	// if trace {

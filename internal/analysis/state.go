@@ -1,18 +1,22 @@
 package analysis
 
 import (
+	"fmt"
 	"sync"
 
+	"github.com/Norgate-AV/netlinx-language-server/internal/analysis/semantic"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
+	"github.com/sirupsen/logrus"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 type Document struct {
-	Content string
-	Tree    *tree_sitter.Tree
+	Content       string
+	Tree          *tree_sitter.Tree
+	SemanticModel *semantic.Document
 }
 
 type State struct {
@@ -35,6 +39,25 @@ func NewState(options *NewStateOptions) *State {
 	}
 }
 
+func (s *State) AnalyzeDocument(uri string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	doc, exists := s.Documents[uri]
+	if !exists || doc.Tree == nil {
+		return fmt.Errorf("document not found or has no syntax tree")
+	}
+
+	analyzer := semantic.NewAnalyzer(s.TreeSitter, s.Logger)
+	semanticDoc, err := analyzer.Analyze(uri, doc.Content, doc.Tree)
+	if err != nil {
+		return err
+	}
+
+	doc.SemanticModel = semanticDoc
+	return nil
+}
+
 func (s *State) AddDocument(uri string, content string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -45,9 +68,23 @@ func (s *State) AddDocument(uri string, content string) {
 func (s *State) AddDocumentLocked(uri string, content string) {
 	tree := s.TreeSitter.Parser.Parse([]byte(content), nil)
 
-	s.Documents[uri] = &Document{
+	doc := &Document{
 		Content: content,
 		Tree:    tree,
+	}
+
+	s.Documents[uri] = doc
+
+	// Analyze document to build semantic model
+	analyzer := semantic.NewAnalyzer(s.TreeSitter, s.Logger)
+	semanticDoc, err := analyzer.Analyze(uri, content, tree)
+	if err != nil {
+		s.Logger.Error("Failed to analyze document", logrus.Fields{
+			"uri":   uri,
+			"error": err,
+		})
+	} else {
+		doc.SemanticModel = semanticDoc
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Norgate-AV/netlinx-language-server/internal/analysis/semantic"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 
 	"github.com/sirupsen/logrus"
@@ -63,9 +64,27 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 }
 
 func (s *Server) GetHoverInfo(uri string, position lsp.Position) (*lsp.Hover, error) {
-	_, ok := s.state.GetDocument(uri)
+	document, ok := s.state.GetDocument(uri)
 	if !ok {
 		return nil, nil // Document not found
+	}
+
+	// If document has semantic model
+	if document.SemanticModel != nil {
+		// Find symbol at position
+		for _, symbol := range document.SemanticModel.Symbols {
+			if containsPosition(symbol.Range, position) {
+				// Create hover content based on symbol type
+				content := createHoverForSymbol(symbol)
+				return &lsp.Hover{
+					Contents: lsp.MarkupContent{
+						Kind:  lsp.MarkupKindMarkdown,
+						Value: content,
+					},
+					Range: &symbol.Range,
+				}, nil
+			}
+		}
 	}
 
 	// Here you'd implement actual hover logic based on document content and position
@@ -76,4 +95,30 @@ func (s *Server) GetHoverInfo(uri string, position lsp.Position) (*lsp.Hover, er
 			Value: "**NetLinx Language Server**\n\nConnection working correctly!",
 		},
 	}, nil
+}
+
+func containsPosition(r lsp.Range, p lsp.Position) bool {
+	// Check if position is within range
+	return (p.Line > r.Start.Line || (p.Line == r.Start.Line && p.Character >= r.Start.Character)) &&
+		(p.Line < r.End.Line || (p.Line == r.End.Line && p.Character <= r.End.Character))
+}
+
+func createHoverForSymbol(symbol *semantic.Symbol) string {
+	switch symbol.Type {
+	case semantic.DeviceSymbol:
+		return fmt.Sprintf("**Device:** %s\n\n%s", symbol.Name, symbol.Value)
+	case semantic.ConstantSymbol:
+		return fmt.Sprintf("**Constant %s:** %s\n\n%s", symbol.DataType, symbol.Name, symbol.Value)
+	case semantic.VariableSymbol:
+		varType := "Variable"
+		if symbol.VariableKind == semantic.VolatileVar {
+			varType = "Volatile Variable"
+		} else if symbol.VariableKind == semantic.NonVolatileVar {
+			varType = "Non-volatile Variable"
+		}
+		return fmt.Sprintf("**%s %s:** %s", varType, symbol.DataType, symbol.Name)
+	// Add other cases
+	default:
+		return fmt.Sprintf("**Symbol:** %s", symbol.Name)
+	}
 }

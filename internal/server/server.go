@@ -5,6 +5,7 @@ import (
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/sirupsen/logrus"
 
 	"github.com/sourcegraph/jsonrpc2"
@@ -34,18 +35,20 @@ func (s *Server) Stop() {
 }
 
 func (s *Server) registerHandlers() *Server {
-	s.handlers["initialize"] = s.Initialize
-	s.handlers["initialized"] = s.Initialized
-	s.handlers["shutdown"] = s.Shutdown
-	s.handlers["exit"] = s.Exit
-	s.handlers["textDocument/didOpen"] = s.TextDocumentDidOpen
-	s.handlers["textDocument/didChange"] = s.TextDocumentDidChange
-	s.handlers["textDocument/didClose"] = s.TextDocumentDidClose
-	s.handlers["textDocument/hover"] = s.Hover
-	s.handlers["textDocument/documentSymbol"] = s.TextDocumentSymbol
-	s.handlers["textDocument/diagnostic"] = s.TextDocumentDiagnostic
-	s.handlers["textDocument/didSave"] = s.TextDocumentDidSave
-	// s.handlers["workspace/didChangeWatchedFiles"] = s.WortkspaceDidChangeWatchedFiles
+	s.handlers[lsp.MethodInitialize] = s.Initialize
+	s.handlers[lsp.MethodInitialized] = s.Initialized
+	s.handlers[lsp.MethodShutdown] = s.Shutdown
+	s.handlers[lsp.MethodExit] = s.Exit
+
+	s.handlers[lsp.MethodTextDocumentDidOpen] = s.TextDocumentDidOpen
+	s.handlers[lsp.MethodTextDocumentDidChange] = s.TextDocumentDidChange
+	s.handlers[lsp.MethodTextDocumentDidClose] = s.TextDocumentDidClose
+	s.handlers[lsp.MethodTextDocumentDidSave] = s.TextDocumentDidSave
+
+	s.handlers[lsp.MethodTextDocumentHover] = s.Hover
+	s.handlers[lsp.MethodTextDocumentDocumentSymbol] = s.TextDocumentSymbol
+	s.handlers[lsp.MethodTextDocumentDiagnostic] = s.TextDocumentDiagnostic
+	// s.handlers[lsp.MethodWorkspaceDidChangeWatchedFiles] = s.WortkspaceDidChangeWatchedFiles
 
 	return s
 }

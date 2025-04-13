@@ -15,7 +15,7 @@ func (s *Server) WorkspaceDidChangeWatchedFiles(ctx context.Context, conn *jsonr
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
-			"method": "workspace/didChangeWatchedFiles",
+			"method": lsp.MethodWorkspaceDidChangeWatchedFiles,
 			"error":  err.Error(),
 		})
 

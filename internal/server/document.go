@@ -15,7 +15,7 @@ func (s *Server) TextDocumentDidOpen(ctx context.Context, conn *jsonrpc2.Conn, r
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
-			"method": "textDocument/didOpen",
+			"method": lsp.MethodTextDocumentDidOpen,
 			"error":  err.Error(),
 		})
 		return
@@ -30,7 +30,7 @@ func (s *Server) TextDocumentDidChange(ctx context.Context, conn *jsonrpc2.Conn,
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
-			"method": "textDocument/didChange",
+			"method": lsp.MethodTextDocumentDidChange,
 			"error":  err.Error(),
 		})
 
@@ -48,7 +48,7 @@ func (s *Server) TextDocumentDidClose(ctx context.Context, conn *jsonrpc2.Conn, 
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
-			"method": "textDocument/didClose",
+			"method": lsp.MethodTextDocumentDidClose,
 			"error":  err.Error(),
 		})
 
@@ -79,7 +79,7 @@ func (s *Server) TextDocumentDiagnostic(ctx context.Context, conn *jsonrpc2.Conn
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
-			"method": "textDocument/diagnostic",
+			"method": lsp.MethodTextDocumentDiagnostic,
 			"error":  err.Error(),
 		})
 
@@ -94,10 +94,12 @@ func (s *Server) TextDocumentSymbol(ctx context.Context, conn *jsonrpc2.Conn, re
 
 	if err := json.Unmarshal(*req.Params, &params); err != nil {
 		s.Logger.Error("Failed to unmarshal document params", logrus.Fields{
-			"method": "textDocument/documentSymbol",
+			"method": lsp.MethodTextDocumentDocumentSymbol,
 			"error":  err.Error(),
 		})
+
 		s.sendError(ctx, conn, req.ID, createError(jsonrpc2.CodeParseError, err.Error()))
+
 		return
 	}
 

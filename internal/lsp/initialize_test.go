@@ -1,19 +1,21 @@
-package lsp
+package lsp_test
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 )
 
 func TestInitializeResultSerialization(t *testing.T) {
 	b := func(v bool) *bool { return &v }
 
-	result := InitializeResult{
-		Capabilities: ServerCapabilities{
-			TextDocumentSync: TextDocumentSyncKindIncremental,
+	result := lsp.InitializeResult{
+		Capabilities: lsp.ServerCapabilities{
+			TextDocumentSync: lsp.TextDocumentSyncKindIncremental,
 			HoverProvider:    b(true),
 		},
-		ServerInfo: ServerInfo{
+		ServerInfo: lsp.ServerInfo{
 			Name:    "TestServer",
 			Version: "1.0.0",
 		},
@@ -43,8 +45,8 @@ func TestInitializeResultSerialization(t *testing.T) {
 	}
 
 	// Verify text document sync is set correctly
-	if textDocSync, ok := capabilities["textDocumentSync"].(float64); !ok || int(textDocSync) != int(TextDocumentSyncKindIncremental) {
-		t.Errorf("Expected textDocumentSync to be %d, got %v", TextDocumentSyncKindIncremental, capabilities["textDocumentSync"])
+	if textDocSync, ok := capabilities["textDocumentSync"].(float64); !ok || int(textDocSync) != int(lsp.TextDocumentSyncKindIncremental) {
+		t.Errorf("Expected textDocumentSync to be %d, got %v", lsp.TextDocumentSyncKindIncremental, capabilities["textDocumentSync"])
 	}
 
 	// Check server info
@@ -66,7 +68,7 @@ func TestInitializeRequestParamsSerialization(t *testing.T) {
 		}
 	}`
 
-	var params InitializeRequestParams
+	var params lsp.InitializeRequestParams
 	if err := json.Unmarshal([]byte(jsonData), &params); err != nil {
 		t.Fatalf("Failed to unmarshal InitializeRequestParams: %v", err)
 	}

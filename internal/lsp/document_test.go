@@ -1,13 +1,15 @@
-package lsp
+package lsp_test
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 )
 
 func TestDidOpenTextDocumentParamsSerialization(t *testing.T) {
-	params := DidOpenTextDocumentParams{
-		TextDocument: TextDocumentItem{
+	params := lsp.DidOpenTextDocumentParams{
+		TextDocument: lsp.TextDocumentItem{
 			URI:        "file:///test.axs",
 			LanguageID: "netlinx",
 			Version:    1,
@@ -20,7 +22,7 @@ func TestDidOpenTextDocumentParamsSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal DidOpenTextDocumentParams: %v", err)
 	}
 
-	var unmarshaled DidOpenTextDocumentParams
+	var unmarshaled lsp.DidOpenTextDocumentParams
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal DidOpenTextDocumentParams: %v", err)
 	}
@@ -36,10 +38,10 @@ func TestDidOpenTextDocumentParamsSerialization(t *testing.T) {
 func TestTextDocumentContentChangeEventSerialization(t *testing.T) {
 	line := uint32(5)
 	character := uint32(10)
-	changeEvent := TextDocumentContentChangeEvent{
-		Range: &Range{
-			Start: Position{Line: line, Character: character},
-			End:   Position{Line: line, Character: character + 5},
+	changeEvent := lsp.TextDocumentContentChangeEvent{
+		Range: &lsp.Range{
+			Start: lsp.Position{Line: line, Character: character},
+			End:   lsp.Position{Line: line, Character: character + 5},
 		},
 		Text: "NewText",
 	}
@@ -49,7 +51,7 @@ func TestTextDocumentContentChangeEventSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal TextDocumentContentChangeEvent: %v", err)
 	}
 
-	var unmarshaled TextDocumentContentChangeEvent
+	var unmarshaled lsp.TextDocumentContentChangeEvent
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal TextDocumentContentChangeEvent: %v", err)
 	}

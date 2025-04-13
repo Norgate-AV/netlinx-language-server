@@ -1,17 +1,19 @@
-package lsp
+package lsp_test
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 )
 
 func TestDiagnosticSerialization(t *testing.T) {
-	severity := DiagnosticSeverityError
+	severity := lsp.DiagnosticSeverityError
 	source := "netlinx-lsp"
-	diagnostic := Diagnostic{
-		Range: Range{
-			Start: Position{Line: 10, Character: 5},
-			End:   Position{Line: 10, Character: 10},
+	diagnostic := lsp.Diagnostic{
+		Range: lsp.Range{
+			Start: lsp.Position{Line: 10, Character: 5},
+			End:   lsp.Position{Line: 10, Character: 10},
 		},
 		Severity: &severity,
 		Source:   &source,
@@ -23,7 +25,7 @@ func TestDiagnosticSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal Diagnostic: %v", err)
 	}
 
-	var unmarshaled Diagnostic
+	var unmarshaled lsp.Diagnostic
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal Diagnostic: %v", err)
 	}
@@ -31,21 +33,21 @@ func TestDiagnosticSerialization(t *testing.T) {
 	if unmarshaled.Message != "Undefined variable" {
 		t.Errorf("Expected message 'Undefined variable', got '%s'", unmarshaled.Message)
 	}
-	if *unmarshaled.Severity != DiagnosticSeverityError {
-		t.Errorf("Expected severity %d, got %d", DiagnosticSeverityError, *unmarshaled.Severity)
+	if *unmarshaled.Severity != lsp.DiagnosticSeverityError {
+		t.Errorf("Expected severity %d, got %d", lsp.DiagnosticSeverityError, *unmarshaled.Severity)
 	}
 }
 
 func TestPublishDiagnosticsParamsSerialization(t *testing.T) {
-	severity := DiagnosticSeverityError
+	severity := lsp.DiagnosticSeverityError
 	source := "netlinx-lsp"
-	params := PublishDiagnosticsParams{
+	params := lsp.PublishDiagnosticsParams{
 		URI: "file:///test.axs",
-		Diagnostics: []Diagnostic{
+		Diagnostics: []lsp.Diagnostic{
 			{
-				Range: Range{
-					Start: Position{Line: 10, Character: 5},
-					End:   Position{Line: 10, Character: 10},
+				Range: lsp.Range{
+					Start: lsp.Position{Line: 10, Character: 5},
+					End:   lsp.Position{Line: 10, Character: 10},
 				},
 				Severity: &severity,
 				Source:   &source,
@@ -59,7 +61,7 @@ func TestPublishDiagnosticsParamsSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal PublishDiagnosticsParams: %v", err)
 	}
 
-	var unmarshaled PublishDiagnosticsParams
+	var unmarshaled lsp.PublishDiagnosticsParams
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal PublishDiagnosticsParams: %v", err)
 	}

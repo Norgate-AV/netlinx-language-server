@@ -1,12 +1,14 @@
-package lsp
+package lsp_test
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 )
 
 func TestPositionSerialization(t *testing.T) {
-	position := Position{
+	position := lsp.Position{
 		Line:      10,
 		Character: 20,
 	}
@@ -16,7 +18,7 @@ func TestPositionSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal Position: %v", err)
 	}
 
-	var unmarshaled Position
+	var unmarshaled lsp.Position
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal Position: %v", err)
 	}
@@ -30,9 +32,9 @@ func TestPositionSerialization(t *testing.T) {
 }
 
 func TestRangeSerialization(t *testing.T) {
-	rangeObj := Range{
-		Start: Position{Line: 5, Character: 10},
-		End:   Position{Line: 5, Character: 20},
+	rangeObj := lsp.Range{
+		Start: lsp.Position{Line: 5, Character: 10},
+		End:   lsp.Position{Line: 5, Character: 20},
 	}
 
 	data, err := json.Marshal(rangeObj)
@@ -40,7 +42,7 @@ func TestRangeSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal Range: %v", err)
 	}
 
-	var unmarshaled Range
+	var unmarshaled lsp.Range
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal Range: %v", err)
 	}

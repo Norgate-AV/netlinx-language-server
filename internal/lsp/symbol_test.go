@@ -1,19 +1,21 @@
-package lsp
+package lsp_test
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 )
 
 func TestSymbolInformationSerialization(t *testing.T) {
-	symbol := SymbolInformation{
+	symbol := lsp.SymbolInformation{
 		Name: "MyFunction",
 		Kind: 12, // Function
-		Location: Location{
+		Location: lsp.Location{
 			URI: "file:///test.axs",
-			Range: Range{
-				Start: Position{Line: 10, Character: 0},
-				End:   Position{Line: 15, Character: 1},
+			Range: lsp.Range{
+				Start: lsp.Position{Line: 10, Character: 0},
+				End:   lsp.Position{Line: 15, Character: 1},
 			},
 		},
 		ContainerName: "ModuleName",
@@ -24,7 +26,7 @@ func TestSymbolInformationSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal SymbolInformation: %v", err)
 	}
 
-	var unmarshaled SymbolInformation
+	var unmarshaled lsp.SymbolInformation
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal SymbolInformation: %v", err)
 	}
@@ -39,19 +41,19 @@ func TestSymbolInformationSerialization(t *testing.T) {
 }
 
 func TestDocumentSymbolSerialization(t *testing.T) {
-	symbol := DocumentSymbol{
+	symbol := lsp.DocumentSymbol{
 		Name:           "DEFINE_DEVICE",
 		Detail:         "Device section",
 		Kind:           2, // Module
-		Range:          Range{Start: Position{Line: 5, Character: 0}, End: Position{Line: 10, Character: 0}},
-		SelectionRange: Range{Start: Position{Line: 5, Character: 0}, End: Position{Line: 5, Character: 14}},
-		Children: []DocumentSymbol{
+		Range:          lsp.Range{Start: lsp.Position{Line: 5, Character: 0}, End: lsp.Position{Line: 10, Character: 0}},
+		SelectionRange: lsp.Range{Start: lsp.Position{Line: 5, Character: 0}, End: lsp.Position{Line: 5, Character: 14}},
+		Children: []lsp.DocumentSymbol{
 			{
 				Name:           "dvTP",
 				Detail:         "10001:1:0",
 				Kind:           13, // Variable
-				Range:          Range{Start: Position{Line: 6, Character: 0}, End: Position{Line: 6, Character: 15}},
-				SelectionRange: Range{Start: Position{Line: 6, Character: 0}, End: Position{Line: 6, Character: 4}},
+				Range:          lsp.Range{Start: lsp.Position{Line: 6, Character: 0}, End: lsp.Position{Line: 6, Character: 15}},
+				SelectionRange: lsp.Range{Start: lsp.Position{Line: 6, Character: 0}, End: lsp.Position{Line: 6, Character: 4}},
 			},
 		},
 	}
@@ -61,7 +63,7 @@ func TestDocumentSymbolSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal DocumentSymbol: %v", err)
 	}
 
-	var unmarshaled DocumentSymbol
+	var unmarshaled lsp.DocumentSymbol
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal DocumentSymbol: %v", err)
 	}
@@ -80,8 +82,8 @@ func TestDocumentSymbolSerialization(t *testing.T) {
 }
 
 func TestDocumentSymbolParamsSerialization(t *testing.T) {
-	params := DocumentSymbolParams{
-		TextDocument: TextDocumentIdentifier{
+	params := lsp.DocumentSymbolParams{
+		TextDocument: lsp.TextDocumentIdentifier{
 			URI: "file:///test.axs",
 		},
 	}
@@ -91,7 +93,7 @@ func TestDocumentSymbolParamsSerialization(t *testing.T) {
 		t.Fatalf("Failed to marshal DocumentSymbolParams: %v", err)
 	}
 
-	var unmarshaled DocumentSymbolParams
+	var unmarshaled lsp.DocumentSymbolParams
 	if err := json.Unmarshal(data, &unmarshaled); err != nil {
 		t.Fatalf("Failed to unmarshal DocumentSymbolParams: %v", err)
 	}

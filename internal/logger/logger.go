@@ -83,7 +83,7 @@ func (l *StructuredLogger) Info(msg string, fields logrus.Fields) {
 }
 
 func (l *StructuredLogger) LogRequest(method string, id any) {
-	l.Info("Request received", logrus.Fields{
+	l.Info("Request Received", logrus.Fields{
 		"type":   "request",
 		"method": method,
 		"id":     id,
@@ -91,7 +91,7 @@ func (l *StructuredLogger) LogRequest(method string, id any) {
 }
 
 func (l *StructuredLogger) LogResponse(method string, id any) {
-	l.Info("Response sent", logrus.Fields{
+	l.Info("Response Sent", logrus.Fields{
 		"type":   "response",
 		"method": method,
 		"id":     id,
@@ -99,14 +99,14 @@ func (l *StructuredLogger) LogResponse(method string, id any) {
 }
 
 func (l *StructuredLogger) LogNotification(method string) {
-	l.Info("Notification received", logrus.Fields{
+	l.Info("Notification Received", logrus.Fields{
 		"type":   "notification",
 		"method": method,
 	})
 }
 
 func (l *StructuredLogger) LogDocumentEvent(action string, uri string) {
-	l.Info("Document event", logrus.Fields{
+	l.Info("Document Event", logrus.Fields{
 		"action": action,
 		"uri":    uri,
 	})

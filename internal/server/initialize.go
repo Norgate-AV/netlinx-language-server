@@ -24,12 +24,13 @@ func (s *Server) Initialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 		return
 	}
 
-	s.Logger.Info("Client connected", logrus.Fields{
+	s.Logger.Info("Client Connected", logrus.Fields{
 		"client_name":    params.ClientInfo.Name,
 		"client_version": params.ClientInfo.Version,
 	})
 
 	response := NewInitializeResponse()
+	s.Logger.LogResponse(req.Method, req.ID)
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
 		s.Logger.Error("Failed to send initialize response", logrus.Fields{
 			"error": err.Error(),
@@ -38,6 +39,7 @@ func (s *Server) Initialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 }
 
 func (s *Server) Initialized(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	s.Logger.LogNotification(req.Method)
 	s.Logger.LogServerEvent("Initialized")
 }
 

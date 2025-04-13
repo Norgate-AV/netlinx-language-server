@@ -84,7 +84,7 @@ func TestSpecializedLogMethods(t *testing.T) {
 				logger.LogRequest("initialize", 1)
 			},
 			expectedFields: map[string]any{
-				"msg":       "Request received",
+				"msg":       "Request Received",
 				"type":      "request",
 				"method":    "initialize",
 				"id":        float64(1), // JSON numbers are floats when unmarshaled
@@ -98,7 +98,7 @@ func TestSpecializedLogMethods(t *testing.T) {
 				logger.LogResponse("initialize", 1)
 			},
 			expectedFields: map[string]any{
-				"msg":       "Response sent",
+				"msg":       "Response Sent",
 				"type":      "response",
 				"method":    "initialize",
 				"id":        float64(1),
@@ -112,7 +112,7 @@ func TestSpecializedLogMethods(t *testing.T) {
 				logger.LogNotification("exit")
 			},
 			expectedFields: map[string]any{
-				"msg":       "Notification received",
+				"msg":       "Notification Received",
 				"type":      "notification",
 				"method":    "exit",
 				"level":     "info",
@@ -125,7 +125,7 @@ func TestSpecializedLogMethods(t *testing.T) {
 				logger.LogDocumentEvent("open", "file:///test.axs")
 			},
 			expectedFields: map[string]any{
-				"msg":       "Document event",
+				"msg":       "Document Event",
 				"action":    "open",
 				"uri":       "file:///test.axs",
 				"level":     "info",

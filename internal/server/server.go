@@ -66,6 +66,8 @@ func (s *Server) Handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 		return
 	}
 
+	s.Logger.LogResponse(req.Method, req.ID)
+
 	if err := conn.Reply(ctx, req.ID, nil); err != nil {
 		s.Logger.Error("Failed to send response", logrus.Fields{
 			"error": err.Error(),

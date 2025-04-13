@@ -114,6 +114,7 @@ func (s *Server) TextDocumentSymbol(ctx context.Context, conn *jsonrpc2.Conn, re
 	}
 
 	// Send response
+	s.Logger.LogResponse(req.Method, req.ID)
 	if err := conn.Reply(ctx, req.ID, symbols); err != nil {
 		s.Logger.Error("Failed to send symbol response", logrus.Fields{
 			"error": err.Error(),

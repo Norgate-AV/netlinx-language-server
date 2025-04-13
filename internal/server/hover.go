@@ -30,6 +30,7 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 			"uri": params.TextDocument.URI,
 		})
 
+		s.Logger.LogResponse(req.Method, req.ID)
 		conn.Reply(ctx, req.ID, nil)
 
 		return
@@ -47,11 +48,13 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 			"position": params.Position,
 		})
 
+		s.Logger.LogResponse(req.Method, req.ID)
 		conn.Reply(ctx, req.ID, nil)
 
 		return
 	}
 
+	s.Logger.LogResponse(req.Method, req.ID)
 	if err := conn.Reply(ctx, req.ID, response); err != nil {
 		s.Logger.Error("Failed to send hover response", logrus.Fields{
 			"error": err.Error(),

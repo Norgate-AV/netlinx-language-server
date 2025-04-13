@@ -7,5 +7,6 @@ import (
 )
 
 func (s *Server) Exit(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	s.Logger.LogNotification(req.Method)
 	s.Logger.LogServerEvent("Exit")
 }

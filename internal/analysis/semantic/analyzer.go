@@ -1,19 +1,19 @@
-// internal/analysis/semantic/analyzer.go
 package semantic
 
 import (
+	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
-	"github.com/sirupsen/logrus"
+
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 type Analyzer struct {
 	parser *parser.TreeSitter
-	logger logrus.FieldLogger
+	logger logger.Logger
 }
 
-func NewAnalyzer(parser *parser.TreeSitter, logger logrus.FieldLogger) *Analyzer {
+func NewAnalyzer(parser *parser.TreeSitter, logger logger.Logger) *Analyzer {
 	return &Analyzer{
 		parser: parser,
 		logger: logger,
@@ -43,14 +43,14 @@ func (a *Analyzer) Analyze(uri string, content string, tree *tree_sitter.Tree) (
 		case "DEFINE_DEVICE":
 			a.processDeviceSection(doc, section, contentBytes)
 		case "DEFINE_CONSTANT":
-			a.processConstantSection(doc, section, contentBytes)
+			// a.processConstantSection(doc, section, contentBytes)
 		case "DEFINE_VARIABLE":
-			a.processVariableSection(doc, section, contentBytes)
+			// a.processVariableSection(doc, section, contentBytes)
 		}
 	}
 
 	// Process functions and other top-level declarations
-	a.processFunctions(doc, root, contentBytes)
+	// a.processFunctions(doc, root, contentBytes)
 
 	return doc, nil
 }
@@ -65,7 +65,7 @@ func (a *Analyzer) findAllSections(root *tree_sitter.Node, content []byte) []*Se
         (define_variable_section) @variable_section
     `)
 	if err != nil {
-		a.logger.Errorf("Failed to create section query: %v", err)
+		a.logger.Printf("Failed to create section query: %v", err)
 		return sections
 	}
 	defer query.Close()
@@ -79,19 +79,19 @@ func (a *Analyzer) findAllSections(root *tree_sitter.Node, content []byte) []*Se
 		node := match.Captures[index].Node
 		var sectionKind string
 
-		switch query.CaptureNameForId(uint(index)) {
-		case "device_section":
-			sectionKind = "DEFINE_DEVICE"
-		case "constant_section":
-			sectionKind = "DEFINE_CONSTANT"
-		case "variable_section":
-			sectionKind = "DEFINE_VARIABLE"
-		}
+		// switch query.CaptureNameForId(uint(index)) {
+		// case "device_section":
+		// 	sectionKind = "DEFINE_DEVICE"
+		// case "constant_section":
+		// 	sectionKind = "DEFINE_CONSTANT"
+		// case "variable_section":
+		// 	sectionKind = "DEFINE_VARIABLE"
+		// }
 
 		sections = append(sections, &Section{
 			Kind:  sectionKind,
-			Node:  node,
-			Range: nodeToRange(node),
+			Node:  &node,
+			Range: nodeToRange(&node),
 		})
 	}
 
@@ -113,7 +113,7 @@ func (a *Analyzer) processDeviceSection(doc *Document, section *Section, content
         ) @device_section
     `)
 	if err != nil {
-		a.logger.Errorf("Failed to create device section query: %v", err)
+		a.logger.Printf("Failed to create device section query: %v", err)
 		return
 	}
 	defer query.Close()
@@ -121,38 +121,38 @@ func (a *Analyzer) processDeviceSection(doc *Document, section *Section, content
 	cursor := parser.CreateQueryCursor()
 	defer cursor.Close()
 
-	cursor.Exec(query, section.Node, content)
+	// cursor.Exec(query, section.Node, content)
 
-	for match := cursor.NextMatch(); match != nil; match = cursor.NextMatch() {
-		for i := 0; i < int(match.CaptureCount); i++ {
-			capture := match.Captures[i]
-			name := query.CaptureNameForId(uint(i))
+	// for match := cursor.NextMatch(); match != nil; match = cursor.NextMatch() {
+	// 	for i := 0; i < int(match.CaptureCount); i++ {
+	// 		capture := match.Captures[i]
+	// 		name := query.CaptureNameForId(uint(i))
 
-			if name == "device_name" {
-				deviceName := getNodeText(capture.Node, content)
-				deviceValue := ""
+	// 		if name == "device_name" {
+	// 			deviceName := getNodeText(capture.Node, content)
+	// 			deviceValue := ""
 
-				// Find the corresponding device value
-				for j := 0; j < int(match.CaptureCount); j++ {
-					if query.CaptureNameForId(uint(j)) == "device_value" {
-						deviceValue = getNodeText(match.Captures[j].Node, content)
-						break
-					}
-				}
+	// 			// Find the corresponding device value
+	// 			for j := 0; j < int(match.CaptureCount); j++ {
+	// 				if query.CaptureNameForId(uint(j)) == "device_value" {
+	// 					deviceValue = getNodeText(match.Captures[j].Node, content)
+	// 					break
+	// 				}
+	// 			}
 
-				symbol := &Symbol{
-					Name:    deviceName,
-					Type:    DeviceSymbol,
-					Value:   deviceValue,
-					Range:   nodeToRange(capture.Node),
-					Section: section,
-					Node:    capture.Node,
-				}
+	// 			symbol := &Symbol{
+	// 				Name:    deviceName,
+	// 				Type:    DeviceSymbol,
+	// 				Value:   deviceValue,
+	// 				Range:   nodeToRange(capture.Node),
+	// 				Section: section,
+	// 				Node:    capture.Node,
+	// 			}
 
-				doc.Symbols[deviceName] = symbol
-			}
-		}
-	}
+	// 			doc.Symbols[deviceName] = symbol
+	// 		}
+	// 	}
+	// }
 }
 
 // Additional helper methods (processConstantSection, processVariableSection, etc.)
@@ -160,8 +160,8 @@ func (a *Analyzer) processDeviceSection(doc *Document, section *Section, content
 
 // Helper to convert node to LSP Range
 func nodeToRange(node *tree_sitter.Node) lsp.Range {
-	start := node.StartPoint()
-	end := node.EndPoint()
+	start := node.StartPosition()
+	end := node.EndPosition()
 
 	return lsp.Range{
 		Start: lsp.Position{
@@ -179,7 +179,7 @@ func getNodeText(node *tree_sitter.Node, content []byte) string {
 	start := node.StartByte()
 	end := node.EndByte()
 
-	if start >= end || uint32(len(content)) < end {
+	if start >= end || uint(len(content)) < end {
 		return ""
 	}
 

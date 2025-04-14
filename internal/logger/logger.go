@@ -2,9 +2,13 @@ package logger
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+
 	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Logger interface {
@@ -24,27 +28,34 @@ type Logger interface {
 	LogServerEvent(event string)
 
 	WithComponent(Component string) Logger
+
+	GetFilePath() string
 }
 
 type StructuredLogger struct {
 	Log       *logrus.Logger
 	Component string
+	logPath   string
 }
 
 func NewFileLogger(fileName string) (*StructuredLogger, error) {
 	log := logrus.New()
 
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o666)
-	if err != nil {
-		return nil, err
+	rotateLogger := &lumberjack.Logger{
+		Filename:   fileName,
+		MaxSize:    10,   // MB before rotation
+		MaxBackups: 5,    // Maximum number of old files to keep
+		MaxAge:     30,   // Days to keep old files
+		Compress:   true, // Compress rotated files
 	}
 
-	log.SetOutput(file)
+	log.SetOutput(rotateLogger)
 	log.SetFormatter(GetFormatter())
 
 	return &StructuredLogger{
 		Log:       log,
 		Component: "server",
+		logPath:   fileName,
 	}, nil
 }
 
@@ -161,4 +172,30 @@ func (l *StructuredLogger) Error(msg string, fields logrus.Fields) {
 
 	fields["component"] = l.Component
 	l.Log.WithFields(fields).Error(msg)
+}
+
+func (l *StructuredLogger) GetFilePath() string {
+	return l.logPath
+}
+
+func EnsureLogDirectoryExists(logPath string) error {
+	logDir := filepath.Dir(logPath)
+	return os.MkdirAll(logDir, 0o755)
+}
+
+func GetDefaultLogPath() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "netlinx-language-server.log"
+	}
+
+	// Platform-specific paths
+	switch runtime.GOOS {
+	case "darwin":
+		return filepath.Join(homeDir, "Library", "Logs", "netlinx-language-server", "server.log")
+	case "windows":
+		return filepath.Join(homeDir, "AppData", "Roaming", "netlinx-language-server", "logs", "server.log")
+	default: // linux and others
+		return filepath.Join(homeDir, ".local", "share", "netlinx-language-server", "logs", "server.log")
+	}
 }

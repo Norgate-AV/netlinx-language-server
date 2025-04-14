@@ -87,6 +87,9 @@ const (
 	MethodProgress                   string = "$/progress"
 	MethodClientRegisterCapability   string = "client/registerCapability"
 	MethodClientUnregisterCapability string = "client/unregisterCapability"
+
+	// Custom
+	MethodNetLinxServerLogPath string = "netlinx/serverLogPath"
 )
 
 var MessageTypeMap = map[string]MessageType{
@@ -169,6 +172,9 @@ var MessageTypeMap = map[string]MessageType{
 	MethodProgress:                   MessageTypeNotification,
 	MethodClientRegisterCapability:   MessageTypeRequest,
 	MethodClientUnregisterCapability: MessageTypeRequest,
+
+	// Custom
+	MethodNetLinxServerLogPath: MessageTypeRequest,
 }
 
 func IsNotification(method string) bool {

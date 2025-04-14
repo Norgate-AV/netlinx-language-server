@@ -6,8 +6,8 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
-	"github.com/sirupsen/logrus"
 
+	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
@@ -50,6 +50,8 @@ func (s *Server) registerHandlers() *Server {
 	s.handlers[lsp.MethodTextDocumentDiagnostic] = s.TextDocumentDiagnostic
 	// s.handlers[lsp.MethodWorkspaceDidChangeWatchedFiles] = s.WortkspaceDidChangeWatchedFiles
 
+	s.handlers[lsp.MethodNetLinxServerLogPath] = s.NetLinxServerLogPath
+
 	return s
 }
 
@@ -89,6 +91,16 @@ func (s *Server) sendError(ctx context.Context, conn *jsonrpc2.Conn, id jsonrpc2
 	if replyErr := conn.ReplyWithError(ctx, id, err); replyErr != nil {
 		s.Logger.Error("Failed to send error response", logrus.Fields{
 			"error": replyErr.Error(),
+		})
+	}
+}
+
+func (s *Server) NetLinxServerLogPath(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) {
+	s.Logger.LogResponse(req.Method, req.ID)
+
+	if err := conn.Reply(ctx, req.ID, s.Logger.GetFilePath()); err != nil {
+		s.Logger.Error("Failed to send log path response", logrus.Fields{
+			"error": err.Error(),
 		})
 	}
 }

@@ -38,8 +38,9 @@ func main() {
 		&cli.StringFlag{
 			Name:    "log-file",
 			Aliases: []string{"l"},
-			Usage:   "Path to log file",
-			Value:   "netlinx-language-server.log",
+			Usage:   "Path to log file (overrides env: NETLINX_LSP_LOG_FILE)",
+			Value:   "",
+			EnvVars: []string{"NETLINX_LSP_LOG_FILE"},
 		},
 		&cli.BoolFlag{
 			Name:  "verbose",
@@ -73,6 +74,14 @@ func serve(c *cli.Context) error {
 	}
 
 	logFile := c.String("log-file")
+	if logFile == "" {
+		logFile = logger.GetDefaultLogPath()
+	}
+
+	if err := logger.EnsureLogDirectoryExists(logFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to create log directory: %v\n", err)
+	}
+
 	log, err := logger.NewFileLogger(logFile)
 	if err != nil {
 		log = logger.NewStdLogger()

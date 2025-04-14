@@ -10,6 +10,7 @@ require (
 	github.com/sourcegraph/jsonrpc2 v0.2.0
 	github.com/tree-sitter/go-tree-sitter v0.25.0
 	github.com/urfave/cli/v2 v2.27.6
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (

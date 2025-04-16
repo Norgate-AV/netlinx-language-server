@@ -22,6 +22,11 @@ type SocketTransport struct {
 }
 
 func NewSocketTransport(port string, logger logger.Logger) (*SocketTransport, error) {
+	_, err := strconv.Atoi(port)
+	if err != nil {
+		return nil, fmt.Errorf("invalid port number: %w", err)
+	}
+
 	return &SocketTransport{
 		port:   port,
 		logger: logger,
@@ -45,7 +50,7 @@ func (t *SocketTransport) Start(ctx context.Context, handler jsonrpc2.Handler) (
 	}
 
 	t.logger.Info("Listening for TCP connections", logrus.Fields{
-		"address": t.listener.Addr().String(),
+		"address": t.Address(),
 		"port":    port,
 	})
 
@@ -92,4 +97,12 @@ func (t *SocketTransport) Close() error {
 	})
 
 	return err
+}
+
+func (t *SocketTransport) Address() string {
+	if t.listener == nil {
+		return ""
+	}
+
+	return t.listener.Addr().String()
 }

@@ -1,0 +1,17 @@
+pre-commit:
+  parallel: true
+  commands:
+    golangci:
+      glob: "*.go"
+      run: golangci-lint run {staged_files}
+    go-fmt:
+      glob: "*.go"
+      run: gofmt -w {staged_files} && git add {staged_files}
+    goimports:
+      glob: "*.go"
+      run: goimports -w {staged_files} && git add {staged_files}
+
+commit-msg:
+  commands:
+    commitsar:
+      run: commitsar

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
+	"strconv"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
@@ -12,7 +14,7 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var (
@@ -22,80 +24,84 @@ var (
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "netlinx-language-server"
-	app.Usage = "A language server for Netlinx"
-	app.Version = version
+	app := &cli.Command{
+		Name:      "netlinx-language-server",
+		Usage:     "A language server for Netlinx",
+		Version:   version,
+		Copyright: "Copyright © 2025 Norgate AV",
 
-	app.HideVersion = true
-	app.HideHelpCommand = true
+		HideHelpCommand: true,
+
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "log-file",
+				Aliases: []string{"l"},
+				Usage:   "Path to log file (overrides env: NETLINX_LSP_LOG_FILE)",
+				Value:   "",
+				Sources: cli.EnvVars("NETLINX_LSP_LOG_FILE"),
+			},
+			&cli.BoolFlag{
+				Name:  "verbose",
+				Usage: "Enable verbose logging",
+				Value: false,
+			},
+			&cli.StringFlag{
+				Name:    "transport",
+				Aliases: []string{"t"},
+				Usage:   "Transport type (stdio, pipe, socket)",
+				Value:   "stdio",
+				Sources: cli.EnvVars("NETLINX_LSP_TRANSPORT"),
+				Validator: func(value string) error {
+					validTransports := []string{"stdio", "pipe", "socket"}
+
+					if slices.Contains(validTransports, value) {
+						return nil
+					}
+
+					return fmt.Errorf("invalid transport type: %s (must be 'stdio', 'pipe', or 'socket')", value)
+				},
+				ValidateDefaults: true,
+			},
+			&cli.StringFlag{
+				Name:    "pipe",
+				Usage:   "Pipe name for transport type 'pipe'",
+				Value:   "netlinx-language-server-pipe",
+				Sources: cli.EnvVars("NETLINX_LSP_PIPE"),
+			},
+			&cli.StringFlag{
+				Name:    "port",
+				Usage:   "Port for transport type 'socket'",
+				Value:   "8080",
+				Sources: cli.EnvVars("NETLINX_LSP_PORT"),
+				Validator: func(value string) error {
+					if _, err := strconv.Atoi(value); err != nil {
+						return fmt.Errorf("invalid port number: %s", value)
+					}
+
+					return nil
+				},
+				ValidateDefaults: true,
+			},
+		},
+
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			return serve(ctx, cmd)
+		},
+	}
 
 	if commit != "" && date != "" {
 		app.Version = fmt.Sprintf("%s (%s, %s)", version, commit, date)
 	}
 
-	app.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:    "log-file",
-			Aliases: []string{"l"},
-			Usage:   "Path to log file (overrides env: NETLINX_LSP_LOG_FILE)",
-			Value:   "",
-			EnvVars: []string{"NETLINX_LSP_LOG_FILE"},
-		},
-		&cli.BoolFlag{
-			Name:  "verbose",
-			Usage: "Enable verbose logging",
-			Value: false,
-		},
-		&cli.BoolFlag{
-			Name:               "version",
-			Aliases:            []string{"v"},
-			Usage:              "Print version information",
-			DisableDefaultText: true,
-		},
-		&cli.StringFlag{
-			Name:    "transport",
-			Aliases: []string{"t"},
-			Usage:   "Transport type (stdio, pipe, socket)",
-			Value:   "stdio",
-			EnvVars: []string{"NETLINX_LSP_TRANSPORT"},
-			// Validator: func(value string) error {
-			// 	if value != "stdio" && value != "pipe" && value != "socket" {
-			// 		return fmt.Errorf("invalid transport type: %s", value)
-			// 	}
-			// 	return nil
-			// },
-			// ValidateDefaults: true,
-		},
-		&cli.StringFlag{
-			Name:    "pipe",
-			Usage:   "Pipe name for transport type 'pipe'",
-			Value:   "netlinx-language-server-pipe",
-			EnvVars: []string{"NETLINX_LSP_PIPE"},
-		},
-		&cli.StringFlag{
-			Name:    "port",
-			Usage:   "Port for transport type 'socket'",
-			Value:   "8080",
-			EnvVars: []string{"NETLINX_LSP_PORT"},
-		},
-	}
-
-	app.Action = func(c *cli.Context) error {
-		return serve(c)
-	}
-
-	app.Commands = []*cli.Command{}
-
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func serve(c *cli.Context) error {
+func serve(_ context.Context, c *cli.Command) error {
 	if c.Bool("version") {
-		fmt.Println(c.App.Version)
+		fmt.Println(c.Version)
 		return nil
 	}
 

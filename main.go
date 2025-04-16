@@ -8,10 +8,10 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+	"github.com/Norgate-AV/netlinx-language-server/internal/transport"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sirupsen/logrus"
-	"github.com/sourcegraph/jsonrpc2"
 	"github.com/urfave/cli/v2"
 )
 
@@ -52,6 +52,32 @@ func main() {
 			Aliases:            []string{"v"},
 			Usage:              "Print version information",
 			DisableDefaultText: true,
+		},
+		&cli.StringFlag{
+			Name:    "transport",
+			Aliases: []string{"t"},
+			Usage:   "Transport type (stdio, pipe, socket)",
+			Value:   "stdio",
+			EnvVars: []string{"NETLINX_LSP_TRANSPORT"},
+			// Validator: func(value string) error {
+			// 	if value != "stdio" && value != "pipe" && value != "socket" {
+			// 		return fmt.Errorf("invalid transport type: %s", value)
+			// 	}
+			// 	return nil
+			// },
+			// ValidateDefaults: true,
+		},
+		&cli.StringFlag{
+			Name:    "pipe",
+			Usage:   "Pipe name for transport type 'pipe'",
+			Value:   "netlinx-language-server-pipe",
+			EnvVars: []string{"NETLINX_LSP_PIPE"},
+		},
+		&cli.StringFlag{
+			Name:    "port",
+			Usage:   "Port for transport type 'socket'",
+			Value:   "8080",
+			EnvVars: []string{"NETLINX_LSP_PORT"},
 		},
 	}
 
@@ -100,8 +126,6 @@ func serve(c *cli.Context) error {
 		}
 	}
 
-	log.LogServerEvent("Started Netlinx Language Server...")
-
 	ts, err := parser.NewTreeSitter()
 	if err != nil {
 		log.Error("Failed to create parser", logrus.Fields{
@@ -129,34 +153,43 @@ func serve(c *cli.Context) error {
 	// 	connOpt = append(connOpt, jsonrpc2.LogMessages(log.New(logWriter, "", 0)))
 	// }
 
-	log.LogServerEvent("Reading from stdin, writing to stdout")
+	transportType := c.String("transport")
+	log.Info("Using transport", logrus.Fields{
+		"type": transportType,
+	})
 
-	<-jsonrpc2.NewConn(
-		context.Background(),
-		jsonrpc2.NewBufferedStream(&stdinStdout{}, jsonrpc2.VSCodeObjectCodec{}),
-		server,
-		// connOpt...,
-	).DisconnectNotify()
+	t, err := transport.CreateTransport(transportType, &transport.Options{
+		PipeName:   c.String("pipe"),
+		SocketPort: c.String("port"),
+		Logger:     log,
+	})
+	if err != nil {
+		log.Error("Failed to create transport", logrus.Fields{
+			"error": err.Error(),
+			"type":  transportType,
+		})
 
-	log.LogServerEvent("Connections closed")
-
-	return nil
-}
-
-type stdinStdout struct{}
-
-func (stdinStdout) Read(p []byte) (n int, err error) {
-	return os.Stdin.Read(p)
-}
-
-func (stdinStdout) Write(p []byte) (n int, err error) {
-	return os.Stdout.Write(p)
-}
-
-func (stdinStdout) Close() error {
-	if err := os.Stdin.Close(); err != nil {
 		return err
 	}
 
-	return os.Stdout.Close()
+	defer t.Close()
+
+	log.LogServerEvent(fmt.Sprintf("Starting server with %s transport", transportType))
+
+	disconnectChan, err := t.Start(context.Background(), server)
+	if err != nil {
+		log.Error("Failed to start transport", logrus.Fields{
+			"error": err.Error(),
+			"type":  transportType,
+		})
+
+		return err
+	}
+
+	log.LogServerEvent("Started Netlinx Language Server...")
+
+	<-disconnectChan
+	log.LogServerEvent("Connections closed")
+
+	return nil
 }

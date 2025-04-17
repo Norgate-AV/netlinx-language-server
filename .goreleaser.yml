@@ -71,3 +71,138 @@ changelog:
       - '^docs:'
       - '^test:'
       - Merge pull request
+
+brews:
+  - name: netlinx-language-server
+    tap:
+      owner: Norgate-AV
+      name: homebrew-tap
+    homepage: "https://github.com/Norgate-AV/netlinx-language-server"
+    description: "Language server for NetLinx"
+    license: "MIT"
+    dependencies:
+      - name: git
+    install: |
+      bin.install "netlinx-language-server"
+    test: |
+      system "#{bin}/netlinx-language-server --version"
+
+scoop:
+  bucket:
+    owner: Norgate-AV
+    name: scoop-bucket
+  homepage: "https://github.com/Norgate-AV/netlinx-language-server"
+  description: "Language server for NetLinx"
+  license: MIT
+  persist:
+    - "data"
+    - "config.yml"
+
+chocolateys:
+  - name: netlinx-language-server
+    title: "NetLinx Language Server"
+    authors: Norgate AV
+    project_url: "https://github.com/Norgate-AV/netlinx-language-server"
+    license_url: "https://github.com/Norgate-AV/netlinx-language-server/blob/main/LICENSE"
+    require_license_acceptance: false
+    project_source_url: "https://github.com/Norgate-AV/netlinx-language-server"
+    docs_url: "https://github.com/Norgate-AV/netlinx-language-server/blob/main/README.md"
+    bug_tracker_url: "https://github.com/Norgate-AV/netlinx-language-server/issues"
+    tags: "netlinx language-server lsp"
+    summary: "Language server for NetLinx programming language"
+    description: |
+      NetLinx Language Server provides IDE features for NetLinx programming
+      language through the Language Server Protocol.
+    api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
+    source_repo: "https://push.chocolatey.org/"
+    skip_publish: false
+
+winget:
+  - name: netlinx-language-server
+    publisher: NorgateAV
+    license: MIT
+    copyright: "Copyright (c) 2025 Norgate AV"
+    short_description: "Language server for NetLinx"
+    description: |
+      NetLinx Language Server provides IDE features for NetLinx programming
+      language through the Language Server Protocol.
+    homepage: "https://github.com/Norgate-AV/netlinx-language-server"
+    tags:
+      - lsp
+      - netlinx
+      - language-server
+    release_notes: "{{.Changelog}}"
+    publisher_url: "https://github.com/Norgate-AV"
+    publisher_support_url: "https://github.com/Norgate-AV/netlinx-language-server/issues"
+
+nfpms:
+  - id: linux-packages
+    package_name: netlinx-language-server
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
+    vendor: Norgate AV
+    homepage: https://github.com/Norgate-AV/netlinx-language-server
+    maintainer: Norgate AV <your-email@example.com>
+    description: Language server for NetLinx
+    license: MIT
+    formats:
+      - deb      # Debian, Ubuntu, etc.
+      - rpm      # Red Hat, Fedora, CentOS, etc.
+      - apk      # Alpine Linux
+    dependencies:
+      - git
+    recommends:
+      - golang
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/netlinx-language-server/copyright
+      - src: README.md
+        dst: /usr/share/doc/netlinx-language-server/README.md
+    scripts:
+      postinstall: "scripts/postinstall.sh"
+      preremove: "scripts/preremove.sh"
+
+apts:
+  - name: netlinx-language-server
+    ids:
+      - linux-packages  # Match ID from nfpms section
+    repository:
+      name: apt-repo
+      owner: Norgate-AV
+      branch: main
+    distributions:
+      - ubuntu
+      - debian
+
+aurs:
+  - name: netlinx-language-server
+    homepage: https://github.com/Norgate-AV/netlinx-language-server
+    description: Language server for NetLinx
+    maintainers:
+      - 'Norgate AV <your-email@example.com>'
+    license: MIT
+    private_key: '{{ .Env.AUR_KEY }}'
+    git_url: 'ssh://aur@aur.archlinux.org/netlinx-language-server.git'
+    package: |-
+      # bin
+      install -Dm755 "./netlinx-language-server" "$pkgdir/usr/bin/netlinx-language-server"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+
+snapcrafts:
+  - name: netlinx-language-server
+    summary: Language server for NetLinx
+    description: |
+      NetLinx Language Server provides IDE features for NetLinx programming
+      language through the Language Server Protocol.
+    grade: stable
+    confinement: strict
+    base: core22
+    publish: true
+    license: MIT
+    apps:
+      netlinx-language-server:
+        command: netlinx-language-server
+        plugs:
+          - home
+          - network

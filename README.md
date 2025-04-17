@@ -22,6 +22,20 @@ The `netlinx-language-server` is a Language Server Protocol (LSP) implementation
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+- [Installation :zap:](#installation-zap)
+  - [macOS](#macos)
+  - [Linux](#linux)
+    - [Debian/Ubuntu](#debianubuntu)
+    - [Fedora/RHEL/CentOS](#fedorarhelcentos)
+    - [Apline](#apline)
+    - [Arch (AUR)](#arch-aur)
+    - [Snap](#snap)
+  - [Windows](#windows)
+    - [Scoop](#scoop)
+    - [Chocolatey](#chocolatey)
+    - [Winget](#winget)
+  - [Direct Download](#direct-download)
+  - [Build from Source](#build-from-source)
 - [Team :soccer:](#team-soccer)
 - [LICENSE :balance_scale:](#license-balance_scale)
 
@@ -29,23 +43,43 @@ The `netlinx-language-server` is a Language Server Protocol (LSP) implementation
 
 ## Installation :zap:
 
-## macOS
+### macOS
 
 ```sh
 brew install norgate-av/tap/netlinx-language-server
 ```
 
-## Linux
+### Linux
 
-<!-- ### Debian/Ubuntu
-
-Add the repository to your system:
+#### Debian/Ubuntu
 
 ```sh
+# Add GPG key
+curl -fsSL https://apt.norgate-av.com/public.key | sudo gpg --dearmor -o /usr/share/keyrings/norgate-av.gpg
 
-``` -->
+# Add repository
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/norgate-av.gpg] https://apt.norgate-av.com stable main" | sudo tee /etc/apt/sources.list.d/norgate-av.list > /dev/null
 
-### Arch (AUR)
+# Update and install
+sudo apt update
+sudo apt install netlinx-language-server
+```
+
+#### Fedora/RHEL/CentOS
+
+```sh
+# Download the RPM package
+sudo rpm -i netlinx-language-server_[version]_[arch].rpm
+```
+
+#### Apline
+
+```sh
+# Download the APK package
+sudo apk add --allow-untrusted ./netlinx-language-server_[version]_[arch].apk
+```
+
+#### Arch (AUR)
 
 ```sh
 paru -S netlinx-language-server-bin
@@ -53,31 +87,53 @@ paru -S netlinx-language-server-bin
 yay -S netlinx-language-server-bin
 ```
 
-### Snap
+#### Snap
 
 ```sh
 snap install netlinx-language-server
 ```
 
-## Windows
+### Windows
 
-### Scoop
+#### Scoop
 
 ```sh
-scoop bucket add norgate-av
+scoop bucket add norgate-av https://github.com/Norgate-AV/scoop-bucket.git
 scoop install netlinx-language-server
 ```
 
-### Chocolatey
+#### Chocolatey
 
 ```sh
-choco install norgate-av/netlinx-language-server
+choco install netlinx-language-server
 ```
 
-### Winget
+#### Winget
 
 ```sh
 winget install norgate-av.netlinx-language-server
+```
+
+### Direct Download
+
+You can download the latest release directly from GitHub Releases.
+
+1. Download the appropriate file for your operating system and architecture
+2. Extract the archive
+3. Move the binary to a location in your PATH
+
+```sh
+# Example for Linux/macOS
+tar -xzf netlinx-language-server_Linux_x86_64.tar.gz
+sudo mv netlinx-language-server /usr/local/bin/
+```
+
+### Build from Source
+
+```sh
+git clone https://github.com/Norgate-AV/netlinx-language-server.git
+cd netlinx-language-server
+make clean build
 ```
 
 ## Team :soccer:

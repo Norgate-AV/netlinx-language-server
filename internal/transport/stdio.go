@@ -14,10 +14,7 @@ type StdioTransport struct {
 }
 
 func NewStdioTransport() (*StdioTransport, error) {
-	return &StdioTransport{
-		reader: os.Stdin,
-		writer: os.Stdout,
-	}, nil
+	return NewStdioTransportWithStreams(os.Stdin, os.Stdout)
 }
 
 func NewStdioTransportWithStreams(reader io.Reader, writer io.Writer) (*StdioTransport, error) {

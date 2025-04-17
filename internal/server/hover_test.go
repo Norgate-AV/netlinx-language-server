@@ -3,10 +3,10 @@ package server_test
 import (
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 )
 
@@ -19,16 +19,16 @@ func TestHover(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})
 
-	state.AddDocument("file:///test.axs", "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
+	state.AddDocument(testDocumentURI, "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
 
 	srv := server.NewServer(log, state)
 
-	hover, err := srv.GetHoverInfo("file:///test.axs", lsp.Position{Line: 2, Character: 8})
+	hover, err := srv.GetHoverInfo(testDocumentURI, lsp.Position{Line: 2, Character: 8})
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

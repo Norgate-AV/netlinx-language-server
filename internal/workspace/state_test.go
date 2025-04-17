@@ -1,10 +1,10 @@
-package analysis_test
+package workspace_test
 
 import (
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 )
 
@@ -17,7 +17,7 @@ func TestDocumentManagement(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})

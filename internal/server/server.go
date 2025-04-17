@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
 
 	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/jsonrpc2"
@@ -15,11 +15,11 @@ type handler func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Reques
 
 type Server struct {
 	Logger   logger.Logger
-	state    *analysis.State
+	state    *workspace.State
 	handlers map[string]handler
 }
 
-func NewServer(logger logger.Logger, state *analysis.State) *Server {
+func NewServer(logger logger.Logger, state *workspace.State) *Server {
 	handler := &Server{
 		Logger:   logger,
 		state:    state,

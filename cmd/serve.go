@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	"github.com/Norgate-AV/netlinx-language-server/internal/transport"
+	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sirupsen/logrus"
@@ -79,7 +79,7 @@ func setupLogging(c *cli.Command) logger.Logger {
 }
 
 func setupServer(log logger.Logger, ts *parser.TreeSitter) (*server.Server, error) {
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})

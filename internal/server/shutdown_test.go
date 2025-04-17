@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	test "github.com/Norgate-AV/netlinx-language-server/internal/testing"
+	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sourcegraph/jsonrpc2"
@@ -35,7 +35,7 @@ func TestShutdown(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})

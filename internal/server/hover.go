@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis/semantic"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
 
 	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/jsonrpc2"

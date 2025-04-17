@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
+
+const testDocumentURI = "file:///test.axs"
 
 func TestTextDocumentDidOpen(t *testing.T) {
 	// Setup
@@ -24,7 +26,7 @@ func TestTextDocumentDidOpen(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})
@@ -34,7 +36,7 @@ func TestTextDocumentDidOpen(t *testing.T) {
 	// Create test document parameters
 	params := lsp.DidOpenTextDocumentParams{
 		TextDocument: lsp.TextDocumentItem{
-			URI:  "file:///test.axs",
+			URI:  testDocumentURI,
 			Text: "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x",
 		},
 	}
@@ -43,7 +45,7 @@ func TestTextDocumentDidOpen(t *testing.T) {
 	paramsBytes, _ := json.Marshal(params)
 	rawParams := json.RawMessage(paramsBytes)
 	req := &jsonrpc2.Request{
-		Method: "textDocument/didOpen",
+		Method: lsp.MethodTextDocumentDidOpen,
 		Params: &rawParams,
 	}
 
@@ -51,7 +53,7 @@ func TestTextDocumentDidOpen(t *testing.T) {
 	srv.TextDocumentDidOpen(context.Background(), nil, req)
 
 	// Verify document was added to state
-	document, exists := state.GetDocument("file:///test.axs")
+	document, exists := state.GetDocument(testDocumentURI)
 	if !exists {
 		t.Fatal("Document was not added to state")
 	}
@@ -72,7 +74,7 @@ func TestTextDocumentDidChange(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})
@@ -80,13 +82,13 @@ func TestTextDocumentDidChange(t *testing.T) {
 	srv := server.NewServer(log, state)
 
 	// First add a document to the state
-	state.AddDocument("file:///test.axs", "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
+	state.AddDocument(testDocumentURI, "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
 
 	// Create change parameters
 	params := lsp.DidChangeTextDocumentParams{
 		TextDocument: lsp.VersionedTextDocumentIdentifier{
 			TextDocumentIdentifier: lsp.TextDocumentIdentifier{
-				URI: "file:///test.axs",
+				URI: testDocumentURI,
 			},
 			Version: 2,
 		},
@@ -101,7 +103,7 @@ func TestTextDocumentDidChange(t *testing.T) {
 	paramsBytes, _ := json.Marshal(params)
 	rawParams := json.RawMessage(paramsBytes)
 	req := &jsonrpc2.Request{
-		Method: "textDocument/didChange",
+		Method: lsp.MethodTextDocumentDidChange,
 		Params: &rawParams,
 	}
 
@@ -109,7 +111,7 @@ func TestTextDocumentDidChange(t *testing.T) {
 	srv.TextDocumentDidChange(context.Background(), nil, req)
 
 	// Verify document was updated in state
-	document, exists := state.GetDocument("file:///test.axs")
+	document, exists := state.GetDocument(testDocumentURI)
 	if !exists {
 		t.Fatal("Document not found in state after update")
 	}
@@ -130,7 +132,7 @@ func TestTextDocumentDidClose(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})
@@ -138,12 +140,12 @@ func TestTextDocumentDidClose(t *testing.T) {
 	srv := server.NewServer(log, state)
 
 	// First add a document to the state
-	state.AddDocument("file:///test.axs", "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
+	state.AddDocument(testDocumentURI, "PROGRAM_NAME='Test'\nDEFINE_VARIABLE\nINTEGER x")
 
 	// Create close parameters
 	params := lsp.DidCloseTextDocumentParams{
 		TextDocument: lsp.TextDocumentIdentifier{
-			URI: "file:///test.axs",
+			URI: testDocumentURI,
 		},
 	}
 
@@ -151,7 +153,7 @@ func TestTextDocumentDidClose(t *testing.T) {
 	paramsBytes, _ := json.Marshal(params)
 	rawParams := json.RawMessage(paramsBytes)
 	req := &jsonrpc2.Request{
-		Method: "textDocument/didClose",
+		Method: lsp.MethodTextDocumentDidClose,
 		Params: &rawParams,
 	}
 
@@ -159,7 +161,7 @@ func TestTextDocumentDidClose(t *testing.T) {
 	srv.TextDocumentDidClose(context.Background(), nil, req)
 
 	// Verify document was removed from state
-	_, exists := state.GetDocument("file:///test.axs")
+	_, exists := state.GetDocument(testDocumentURI)
 	if exists {
 		t.Fatal("Document still exists in state after close")
 	}
@@ -175,7 +177,7 @@ func TestInvalidParameters(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})
@@ -190,17 +192,17 @@ func TestInvalidParameters(t *testing.T) {
 	}{
 		{
 			name:   "Invalid didOpen params",
-			method: "textDocument/didOpen",
+			method: lsp.MethodTextDocumentDidOpen,
 			params: `{"textDocument": {"uri": 123}}`, // uri should be a string
 		},
 		{
 			name:   "Invalid didChange params",
-			method: "textDocument/didChange",
+			method: lsp.MethodTextDocumentDidChange,
 			params: `{"textDocument": {"uri": "file:///test.axs"}}`, // missing contentChanges
 		},
 		{
 			name:   "Invalid didClose params",
-			method: "textDocument/didClose",
+			method: lsp.MethodTextDocumentDidClose,
 			params: `{"textDocument": {"uri": []}}`, // uri should be a string
 		},
 	}
@@ -217,11 +219,11 @@ func TestInvalidParameters(t *testing.T) {
 			// Depending on the method, call the appropriate handler
 			// These should not panic even with invalid parameters
 			switch tc.method {
-			case "textDocument/didOpen":
+			case lsp.MethodTextDocumentDidOpen:
 				srv.TextDocumentDidOpen(context.Background(), nil, req)
-			case "textDocument/didChange":
+			case lsp.MethodTextDocumentDidChange:
 				srv.TextDocumentDidChange(context.Background(), nil, req)
-			case "textDocument/didClose":
+			case lsp.MethodTextDocumentDidClose:
 				srv.TextDocumentDidClose(context.Background(), nil, req)
 			}
 

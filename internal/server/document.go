@@ -105,16 +105,17 @@ func (s *Server) TextDocumentSymbol(ctx context.Context, conn *jsonrpc2.Conn, re
 
 	s.Logger.LogDocumentEvent("symbol", params.TextDocument.URI)
 
-	symbols, err := s.state.ExtractSymbols(params.TextDocument.URI)
-	if err != nil {
-		s.Logger.Error("Failed to extract symbols", logrus.Fields{
-			"uri":   params.TextDocument.URI,
-			"error": err.Error(),
-		})
+	// symbols, err := s.state.ExtractSymbols(params.TextDocument.URI)
+	// if err != nil {
+	// 	s.Logger.Error("Failed to extract symbols", logrus.Fields{
+	// 		"uri":   params.TextDocument.URI,
+	// 		"error": err.Error(),
+	// 	})
 
-		// Return empty result on error
-		symbols = []lsp.DocumentSymbol{}
-	}
+	// 	// Return empty result on error
+	// 	symbols = []lsp.DocumentSymbol{}
+	// }
+	symbols := []lsp.DocumentSymbol{}
 
 	// Send response
 	s.Logger.LogResponse(req.Method, req.ID)

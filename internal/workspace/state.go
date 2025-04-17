@@ -1,12 +1,12 @@
-package analysis
+package workspace
 
 import (
 	"fmt"
 	"sync"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis/semantic"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 	"github.com/sirupsen/logrus"
 

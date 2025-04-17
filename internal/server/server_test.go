@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/internal/analysis"
+	"github.com/Norgate-AV/netlinx-language-server/internal/config"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
+	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sourcegraph/jsonrpc2"
@@ -22,7 +23,7 @@ func TestLSPHandlerCreation(t *testing.T) {
 
 	defer ts.Close()
 
-	state := analysis.NewState(&analysis.NewStateOptions{
+	state := workspace.NewState(&workspace.NewStateOptions{
 		TreeSitter: ts,
 		Logger:     log,
 	})
@@ -32,9 +33,9 @@ func TestLSPHandlerCreation(t *testing.T) {
 		t.Fatal("Expected non-nil handler")
 	}
 
-	state.AddDocument("file:///test.axs", "test content")
+	state.AddDocument(testDocumentURI, "test content")
 
-	document, ok := state.GetDocument("file:///test.axs")
+	document, ok := state.GetDocument(testDocumentURI)
 	if !ok {
 		t.Fatal("Expected document to be added to state")
 	}
@@ -60,7 +61,7 @@ func TestInitializeResultJSON(t *testing.T) {
 	}
 
 	// Verify server info
-	if unmarshaled.ServerInfo.Name != "netlinx-language-server" {
+	if unmarshaled.ServerInfo.Name != config.AppName {
 		t.Errorf("Expected server name 'netlinx-language-server', got '%s'", unmarshaled.ServerInfo.Name)
 	}
 

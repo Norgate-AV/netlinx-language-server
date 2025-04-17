@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/Norgate-AV/netlinx-language-server/internal/config"
+
 	"github.com/urfave/cli/v3"
 )
 
@@ -18,10 +20,10 @@ var (
 
 func NewRootCommand() *cli.Command {
 	app := &cli.Command{
-		Name:      "netlinx-language-server",
-		Usage:     "A language server for Netlinx",
+		Name:      config.AppName,
+		Usage:     config.AppDescription,
 		Version:   version,
-		Copyright: "Copyright © 2025 Norgate AV",
+		Copyright: config.Copyright,
 
 		HideHelpCommand: true,
 
@@ -29,9 +31,9 @@ func NewRootCommand() *cli.Command {
 			&cli.StringFlag{
 				Name:    "log-file",
 				Aliases: []string{"l"},
-				Usage:   "Path to log file (overrides env: NETLINX_LSP_LOG_FILE)",
+				Usage:   "Path to log file",
 				Value:   "",
-				Sources: cli.EnvVars("NETLINX_LSP_LOG_FILE"),
+				Sources: cli.EnvVars(config.EnvLogFile),
 			},
 			&cli.BoolFlag{
 				Name:  "verbose",
@@ -42,30 +44,29 @@ func NewRootCommand() *cli.Command {
 				Name:    "transport",
 				Aliases: []string{"t"},
 				Usage:   "Transport type (stdio, pipe, socket)",
-				Value:   "stdio",
-				Sources: cli.EnvVars("NETLINX_LSP_TRANSPORT"),
+				Value:   config.DefaultTransportType,
+				Sources: cli.EnvVars(config.EnvTransport),
 				Validator: func(value string) error {
-					validTransports := []string{"stdio", "pipe", "socket"}
-
-					if slices.Contains(validTransports, value) {
+					if slices.Contains(config.ValidTransports, value) {
 						return nil
 					}
 
-					return fmt.Errorf("invalid transport type: %s (must be 'stdio', 'pipe', or 'socket')", value)
+					return fmt.Errorf("invalid transport type: %s (must be one of: %v)",
+						value, config.ValidTransports)
 				},
 				ValidateDefaults: true,
 			},
 			&cli.StringFlag{
 				Name:    "pipe",
 				Usage:   "Pipe name for transport type 'pipe'",
-				Value:   "netlinx-language-server-pipe",
-				Sources: cli.EnvVars("NETLINX_LSP_PIPE"),
+				Value:   config.DefaultPipeName,
+				Sources: cli.EnvVars(config.EnvPipe),
 			},
 			&cli.StringFlag{
 				Name:    "port",
 				Usage:   "Port for transport type 'socket'",
-				Value:   "8080",
-				Sources: cli.EnvVars("NETLINX_LSP_PORT"),
+				Value:   config.DefaultPort,
+				Sources: cli.EnvVars(config.EnvPort),
 				Validator: func(value string) error {
 					if _, err := strconv.Atoi(value); err != nil {
 						return fmt.Errorf("invalid port number: %s", value)

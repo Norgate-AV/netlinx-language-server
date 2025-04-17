@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 
+	"github.com/Norgate-AV/netlinx-language-server/internal/config"
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 
 	"github.com/sourcegraph/jsonrpc2"
@@ -21,11 +22,11 @@ type Options struct {
 
 func CreateTransport(transport string, options *Options) (Transport, error) {
 	switch transport {
-	case "stdio":
+	case config.TransportTypeStdio:
 		return NewStdioTransport()
-	case "pipe":
+	case config.TransportTypePipe:
 		return NewPipeTransport(options.PipeName, options.Logger)
-	case "socket":
+	case config.TransportTypeSocket:
 		return NewSocketTransport(options.SocketPort, options.Logger)
 	default:
 		options.Logger.Info("Unknown transport requested, defaulting to stdio", nil)

@@ -5,7 +5,6 @@ go 1.24
 toolchain go1.24.2
 
 require (
-	github.com/containerd/fifo v1.1.0
 	github.com/norgate-av/tree-sitter-netlinx v1.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/jsonrpc2 v0.2.0

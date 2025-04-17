@@ -2,8 +2,10 @@ package transport_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	test "github.com/Norgate-AV/netlinx-language-server/internal/testing"
@@ -40,14 +42,18 @@ func TestPipeTransport_PipesNotCreatedUntilStart(t *testing.T) {
 
 	// Assert
 	tempDir := os.TempDir()
-	inPipePath := filepath.Join(tempDir, pipeName+"-in")
-	outPipePath := filepath.Join(tempDir, pipeName+"-out")
 
-	_, err = os.Stat(inPipePath)
-	assert.True(t, os.IsNotExist(err), "Input pipe should not exist before Start()")
+	var pipePathToCheck string
+	if runtime.GOOS == "windows" {
+		// On Windows we expect a file with -pipe suffix containing the port
+		pipePathToCheck = filepath.Join(tempDir, fmt.Sprintf("%s-pipe", pipeName))
+	} else {
+		// On Unix we expect a socket with the pipe name
+		pipePathToCheck = filepath.Join(tempDir, pipeName)
+	}
 
-	_, err = os.Stat(outPipePath)
-	assert.True(t, os.IsNotExist(err), "Output pipe should not exist before Start()")
+	_, err = os.Stat(pipePathToCheck)
+	assert.True(t, os.IsNotExist(err), "Pipe/socket should not exist before Start()")
 
 	_ = pipeTransport.Close()
 }

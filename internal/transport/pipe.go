@@ -4,24 +4,32 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
-	"syscall"
+	"runtime"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 
-	"github.com/containerd/fifo"
 	"github.com/sourcegraph/jsonrpc2"
 )
 
 type PipeTransport struct {
-	name    string
-	logger  logger.Logger
-	inPipe  io.ReadCloser
-	outPipe io.WriteCloser
+	name     string
+	logger   logger.Logger
+	pipe     io.ReadWriteCloser
+	listener net.Listener
 }
 
 func NewPipeTransport(name string, logger logger.Logger) (*PipeTransport, error) {
+	if name == "" {
+		return nil, fmt.Errorf("name cannot be empty")
+	}
+
+	if logger == nil {
+		return nil, fmt.Errorf("logger cannot be nil")
+	}
+
 	return &PipeTransport{
 		name:   name,
 		logger: logger,
@@ -29,87 +37,99 @@ func NewPipeTransport(name string, logger logger.Logger) (*PipeTransport, error)
 }
 
 func (t *PipeTransport) Start(ctx context.Context, handler jsonrpc2.Handler) (<-chan struct{}, error) {
-	tempDir := os.TempDir()
-	inPipePath := filepath.Join(tempDir, fmt.Sprintf("%s-in", t.name))
-	outPipePath := filepath.Join(tempDir, fmt.Sprintf("%s-out", t.name))
+	// Platform-agnostic implementation that meets the LSP spec requirements
+	var listener net.Listener
+	var err error
 
-	// Clean up existing pipes
-	if err := os.Remove(inPipePath); err != nil && !os.IsNotExist(err) {
-		t.logger.Error(fmt.Sprintf("Failed to remove input pipe: %v", err), nil)
-	}
-
-	if err := os.Remove(outPipePath); err != nil && !os.IsNotExist(err) {
-		t.logger.Error(fmt.Sprintf("Failed to remove output pipe: %v", err), nil)
-	}
-
-	// Create output FIFO (to client)
-	outFifo, err := fifo.OpenFifo(ctx, outPipePath, syscall.O_WRONLY|syscall.O_CREAT, 0o666)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create output pipe: %w", err)
-	}
-
-	// Print connection info
-	fmt.Printf("Server listening on pipes:\nIN: %s\nOUT: %s\n", inPipePath, outPipePath)
-
-	// Create input FIFO (from client)
-	inFifo, err := fifo.OpenFifo(ctx, inPipePath, syscall.O_RDONLY|syscall.O_CREAT, 0o666)
-	if err != nil {
-		closeErr := outFifo.Close()
-		if closeErr != nil {
-			t.logger.Error(fmt.Sprintf("Failed to close output pipe: %v", closeErr), nil)
+	if runtime.GOOS == "windows" {
+		// Windows: Emulate named pipe through TCP with pipe name file
+		listener, err = net.Listen("tcp", "127.0.0.1:0")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create TCP listener: %w", err)
 		}
 
-		return nil, fmt.Errorf("failed to create input pipe: %w", err)
+		// Write pipe name and port to a special file for discovery
+		pipeInfo := fmt.Sprintf("%d", listener.Addr().(*net.TCPAddr).Port)
+		pipePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s-pipe", t.name))
+
+		if err := os.WriteFile(pipePath, []byte(pipeInfo), 0o666); err != nil {
+			listener.Close()
+			return nil, fmt.Errorf("failed to create pipe info file: %w", err)
+		}
+
+		t.logger.Info(fmt.Sprintf("Windows pipe transport listening on port %s (pipe info at %s)",
+			pipeInfo, pipePath), nil)
+	} else {
+		// Unix: Use Unix domain socket (as per LSP spec)
+		socketPath := filepath.Join(os.TempDir(), t.name)
+
+		// Remove existing socket if present
+		if err := os.Remove(socketPath); err != nil && !os.IsNotExist(err) {
+			t.logger.Error(fmt.Sprintf("Failed to remove existing socket: %v", err), nil)
+		}
+
+		listener, err = net.Listen("unix", socketPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create unix domain socket: %w", err)
+		}
+
+		t.logger.Info(fmt.Sprintf("Unix socket transport listening on %s", socketPath), nil)
 	}
 
-	t.inPipe = inFifo
-	t.outPipe = outFifo
+	t.listener = listener
 
-	// Create a stream from the pipes
-	stream := jsonrpc2.NewBufferedStream(&pipeStream{inFifo, outFifo}, jsonrpc2.VSCodeObjectCodec{})
-	conn := jsonrpc2.NewConn(ctx, stream, handler)
+	// Create a disconnect channel
+	disconnectCh := make(chan struct{})
 
-	return conn.DisconnectNotify(), nil
+	// Accept connections in a goroutine
+	go func() {
+		defer close(disconnectCh)
+
+		conn, err := listener.Accept()
+		if err != nil {
+			t.logger.Error(fmt.Sprintf("Failed to accept connection: %v", err), nil)
+			return
+		}
+
+		t.pipe = conn
+
+		// Create a stream from the connection
+		stream := jsonrpc2.NewBufferedStream(conn, jsonrpc2.VSCodeObjectCodec{})
+		jsonConn := jsonrpc2.NewConn(ctx, stream, handler)
+
+		select {
+		case <-ctx.Done():
+			jsonConn.Close()
+		case <-jsonConn.DisconnectNotify():
+			// Client disconnected
+		}
+	}()
+
+	return disconnectCh, nil
 }
 
 func (t *PipeTransport) Close() error {
-	var err1, err2 error
+	var err error
 
-	if t.inPipe != nil {
-		err1 = t.inPipe.Close()
+	if t.pipe != nil {
+		err = t.pipe.Close()
 	}
 
-	if t.outPipe != nil {
-		err2 = t.outPipe.Close()
+	if t.listener != nil {
+		// Only capture subsequent errors if we haven't found one yet
+		if closeErr := t.listener.Close(); err == nil {
+			err = closeErr
+		}
 	}
 
-	if err1 != nil {
-		return err1
+	// Clean up pipe info file on Windows
+	if runtime.GOOS == "windows" {
+		pipePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s-pipe", t.name))
+		// Only capture this error if we haven't found one yet
+		if removeErr := os.Remove(pipePath); removeErr != nil && !os.IsNotExist(removeErr) && err == nil {
+			err = removeErr
+		}
 	}
 
-	return err2
-}
-
-type pipeStream struct {
-	in  io.ReadCloser
-	out io.WriteCloser
-}
-
-func (p *pipeStream) Read(data []byte) (int, error) {
-	return p.in.Read(data)
-}
-
-func (p *pipeStream) Write(data []byte) (int, error) {
-	return p.out.Write(data)
-}
-
-func (p *pipeStream) Close() error {
-	err1 := p.in.Close()
-	err2 := p.out.Close()
-
-	if err1 != nil {
-		return err1
-	}
-
-	return err2
+	return err
 }

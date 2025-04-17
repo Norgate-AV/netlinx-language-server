@@ -3,6 +3,7 @@ version: 2
 before:
   hooks:
     - go mod tidy
+    - sh -c 'VERSION={{.Version}} COMMIT={{.Commit}} DATE={{.Date}} ./scripts/update-flake.sh'
 
 builds:
   - id: linux-darwin

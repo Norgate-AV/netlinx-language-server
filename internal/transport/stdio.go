@@ -2,7 +2,6 @@ package transport
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/sourcegraph/jsonrpc2"
@@ -18,7 +17,7 @@ func (t *StdioTransport) Start(ctx context.Context, handler jsonrpc2.Handler) (<
 	stream := jsonrpc2.NewBufferedStream(&stdio{}, jsonrpc2.VSCodeObjectCodec{})
 	conn := jsonrpc2.NewConn(ctx, stream, handler)
 
-	fmt.Printf("Server listening on: %s...\n", os.Stdin.Name())
+	// fmt.Printf("Server listening on: %s...\n", os.Stdin.Name())
 
 	return conn.DisconnectNotify(), nil
 }

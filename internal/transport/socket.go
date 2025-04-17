@@ -65,9 +65,14 @@ func (t *SocketTransport) Start(ctx context.Context, handler jsonrpc2.Handler) (
 
 		conn, err := t.listener.Accept()
 		if err != nil {
-			t.logger.Error("Failed to accept connection", logrus.Fields{
-				"error": err.Error(),
-			})
+			select {
+			case <-ctx.Done():
+				return // Exit silently if context canceled
+			default:
+				t.logger.Error("Failed to accept connection", logrus.Fields{
+					"error": err.Error(),
+				})
+			}
 
 			return
 		}

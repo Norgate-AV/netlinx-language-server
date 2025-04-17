@@ -2,8 +2,10 @@ package transport_test
 
 import (
 	"context"
+	"io"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/transport"
 	"github.com/sourcegraph/jsonrpc2"
@@ -21,12 +23,8 @@ func TestStdioTransport_Creation(t *testing.T) {
 func TestStdioTransport_ReplacesStdinAndStdout(t *testing.T) {
 	// Arrange
 	origStdin, origStdout := os.Stdin, os.Stdout
-	defer func() { os.Stdin, os.Stdout = origStdin, origStdout }()
 
 	r, w, _ := os.Pipe()
-	defer r.Close()
-	defer w.Close()
-
 	os.Stdin, os.Stdout = r, w
 
 	// Act
@@ -35,20 +33,21 @@ func TestStdioTransport_ReplacesStdinAndStdout(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	require.NotNil(t, transport)
+
+	os.Stdin, os.Stdout = origStdin, origStdout
+
+	w.Close()
+	r.Close()
 }
 
 func TestStdioTransport_StartReturnsChannel(t *testing.T) {
 	// Arrange
-	origStdin, origStdout := os.Stdin, os.Stdout
-	defer func() { os.Stdin, os.Stdout = origStdin, origStdout }()
+	r1, w1 := io.Pipe() // for stdin
+	r2, w2 := io.Pipe() // for stdout
 
-	r, w, _ := os.Pipe()
-	defer r.Close()
-	defer w.Close()
+	transport, err := transport.NewStdioTransportWithStreams(r1, w2)
+	require.NoError(t, err)
 
-	os.Stdin, os.Stdout = r, w
-
-	transport, _ := transport.NewStdioTransport()
 	ctx := context.Background()
 
 	// Simple handler
@@ -63,25 +62,25 @@ func TestStdioTransport_StartReturnsChannel(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	assert.NotNil(t, disconnectCh)
+
+	// Clean up pipes
+	w1.Close()
+	r2.Close()
 }
 
 func TestStdioTransport_CanBeStartedAndStopped(t *testing.T) {
 	// Arrange
-	origStdin, origStdout := os.Stdin, os.Stdout
-	defer func() { os.Stdin, os.Stdout = origStdin, origStdout }()
+	r1, w1 := io.Pipe() // for stdin
+	r2, w2 := io.Pipe() // for stdout
 
-	r, w, _ := os.Pipe()
-	defer r.Close()
-	defer w.Close()
+	transport, err := transport.NewStdioTransportWithStreams(r1, w2)
+	require.NoError(t, err)
 
-	os.Stdin, os.Stdout = r, w
-
-	transport, _ := transport.NewStdioTransport()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Act
-	_, err := transport.Start(ctx, jsonrpc2.HandlerWithError(
-		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
+	disconnectCh, err := transport.Start(ctx, jsonrpc2.HandlerWithError(
+		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (any, error) {
 			return nil, nil
 		}))
 
@@ -90,4 +89,16 @@ func TestStdioTransport_CanBeStartedAndStopped(t *testing.T) {
 
 	// Clean up
 	cancel()
+
+	// Wait for disconnect notification
+	select {
+	case <-disconnectCh:
+		// Successfully disconnected
+	case <-time.After(100 * time.Millisecond):
+		// Timeout is okay too
+	}
+
+	// Clean up pipes
+	w1.Close()
+	r2.Close()
 }

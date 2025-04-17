@@ -2,22 +2,38 @@ package transport
 
 import (
 	"context"
+	"io"
 	"os"
 
 	"github.com/sourcegraph/jsonrpc2"
 )
 
-type StdioTransport struct{}
+type StdioTransport struct {
+	reader io.Reader
+	writer io.Writer
+}
 
 func NewStdioTransport() (*StdioTransport, error) {
-	return &StdioTransport{}, nil
+	return &StdioTransport{
+		reader: os.Stdin,
+		writer: os.Stdout,
+	}, nil
+}
+
+func NewStdioTransportWithStreams(reader io.Reader, writer io.Writer) (*StdioTransport, error) {
+	return &StdioTransport{
+		reader: reader,
+		writer: writer,
+	}, nil
 }
 
 func (t *StdioTransport) Start(ctx context.Context, handler jsonrpc2.Handler) (<-chan struct{}, error) {
-	stream := jsonrpc2.NewBufferedStream(&stdio{}, jsonrpc2.VSCodeObjectCodec{})
-	conn := jsonrpc2.NewConn(ctx, stream, handler)
+	stream := jsonrpc2.NewBufferedStream(&stdio{
+		reader: t.reader,
+		writer: t.writer,
+	}, jsonrpc2.VSCodeObjectCodec{})
 
-	// fmt.Printf("Server listening on: %s...\n", os.Stdin.Name())
+	conn := jsonrpc2.NewConn(ctx, stream, handler)
 
 	return conn.DisconnectNotify(), nil
 }
@@ -26,20 +42,29 @@ func (t *StdioTransport) Close() error {
 	return nil
 }
 
-type stdio struct{}
-
-func (stdio) Read(p []byte) (n int, err error) {
-	return os.Stdin.Read(p)
+type stdio struct {
+	reader io.Reader
+	writer io.Writer
 }
 
-func (stdio) Write(p []byte) (n int, err error) {
-	return os.Stdout.Write(p)
+func (s *stdio) Read(p []byte) (n int, err error) {
+	return s.reader.Read(p)
 }
 
-func (stdio) Close() error {
-	if err := os.Stdin.Close(); err != nil {
-		return err
+func (s *stdio) Write(p []byte) (n int, err error) {
+	return s.writer.Write(p)
+}
+
+func (s *stdio) Close() error {
+	if closer, ok := s.reader.(io.Closer); ok {
+		if err := closer.Close(); err != nil {
+			return err
+		}
 	}
 
-	return os.Stdout.Close()
+	if closer, ok := s.writer.(io.Closer); ok {
+		return closer.Close()
+	}
+
+	return nil
 }

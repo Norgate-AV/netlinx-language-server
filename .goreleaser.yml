@@ -4,6 +4,7 @@ before:
   hooks:
     - go mod tidy
     - sh -c 'VERSION={{.Version}} COMMIT={{.Commit}} DATE={{.Date}} ./scripts/update-flake.sh'
+    - git-chglog --output CHANGELOG.md
 
 builds:
   - id: linux-darwin
@@ -67,10 +68,23 @@ checksum:
 
 changelog:
   sort: asc
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: 'Performance Improvements'
+      regexp: "^.*perf[(\\w)]*:+.*$"
+      order: 2
+    - title: 'Others'
+      order: 999
   filters:
     exclude:
       - '^docs:'
       - '^test:'
+      - '^chore:'
       - Merge pull request
 
 brews:
@@ -207,3 +221,12 @@ snapcrafts:
         plugs:
           - home
           - network
+release:
+  github:
+    owner: Norgate-AV
+    name: netlinx-language-server
+  prerelease: auto  # Mark as prerelease for beta/alpha tags
+  draft: false      # Publish immediately
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-dev.{{ .ShortCommit }}"

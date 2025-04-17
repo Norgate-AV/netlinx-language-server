@@ -1,0 +1,28 @@
+run:
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
+  skip-dirs:
+    - vendor
+
+linters:
+  enable:
+    - errcheck
+    - gofmt
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/Norgate-AV/netlinx-language-server

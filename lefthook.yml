@@ -3,7 +3,11 @@ pre-commit:
   commands:
     golangci:
       glob: "*.go"
-      run: golangci-lint run {staged_files}
+      run: |
+        if [ -n "{staged_files}" ]; then
+          golangci-lint run --fix {staged_files}
+          git add {staged_files}
+        fi
     go-fmt:
       glob: "*.go"
       run: gofmt -w {staged_files} && git add {staged_files}

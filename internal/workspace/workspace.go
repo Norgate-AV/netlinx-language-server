@@ -19,36 +19,36 @@ type Document struct {
 	SemanticModel *semantic.Document
 }
 
-type State struct {
+type Workspace struct {
 	Documents  map[lsp.DocumentUri]*Document
 	TreeSitter *parser.TreeSitter
 	mutex      sync.RWMutex
 	Logger     logger.Logger
 }
 
-type NewStateOptions struct {
+type Options struct {
 	Logger     logger.Logger
 	TreeSitter *parser.TreeSitter
 }
 
-func NewState(options *NewStateOptions) *State {
-	return &State{
+func NewWorkspace(options *Options) *Workspace {
+	return &Workspace{
 		Documents:  make(map[lsp.DocumentUri]*Document),
 		TreeSitter: options.TreeSitter,
 		Logger:     options.Logger,
 	}
 }
 
-func (s *State) AnalyzeDocument(uri string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (w *Workspace) AnalyzeDocument(uri string) error {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 
-	doc, exists := s.Documents[uri]
+	doc, exists := w.Documents[uri]
 	if !exists || doc.Tree == nil {
 		return fmt.Errorf("document not found or has no syntax tree")
 	}
 
-	analyzer := semantic.NewAnalyzer(s.TreeSitter, s.Logger)
+	analyzer := semantic.NewAnalyzer(w.TreeSitter, w.Logger)
 	semanticDoc, err := analyzer.Analyze(uri, doc.Content, doc.Tree)
 	if err != nil {
 		return err
@@ -58,28 +58,28 @@ func (s *State) AnalyzeDocument(uri string) error {
 	return nil
 }
 
-func (s *State) AddDocument(uri string, content string) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (w *Workspace) AddDocument(uri string, content string) {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 
-	s.AddDocumentLocked(uri, content)
+	w.AddDocumentLocked(uri, content)
 }
 
-func (s *State) AddDocumentLocked(uri string, content string) {
-	tree := s.TreeSitter.Parser.Parse([]byte(content), nil)
+func (w *Workspace) AddDocumentLocked(uri string, content string) {
+	tree := w.TreeSitter.Parser.Parse([]byte(content), nil)
 
 	doc := &Document{
 		Content: content,
 		Tree:    tree,
 	}
 
-	s.Documents[uri] = doc
+	w.Documents[uri] = doc
 
 	// Analyze document to build semantic model
-	analyzer := semantic.NewAnalyzer(s.TreeSitter, s.Logger)
+	analyzer := semantic.NewAnalyzer(w.TreeSitter, w.Logger)
 	semanticDoc, err := analyzer.Analyze(uri, content, tree)
 	if err != nil {
-		s.Logger.Error("Failed to analyze document", logrus.Fields{
+		w.Logger.Error("Failed to analyze document", logrus.Fields{
 			"uri":   uri,
 			"error": err,
 		})
@@ -88,11 +88,11 @@ func (s *State) AddDocumentLocked(uri string, content string) {
 	}
 }
 
-func (s *State) GetDocument(uri string) (*Document, bool) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+func (w *Workspace) GetDocument(uri string) (*Document, bool) {
+	w.mutex.RLock()
+	defer w.mutex.RUnlock()
 
-	document, exists := s.Documents[uri]
+	document, exists := w.Documents[uri]
 
 	if !exists {
 		return nil, false
@@ -101,38 +101,38 @@ func (s *State) GetDocument(uri string) (*Document, bool) {
 	return document, true
 }
 
-func (s *State) UpdateDocument(uri string, content string) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (w *Workspace) UpdateDocument(uri string, content string) {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 
-	if document, exists := s.Documents[uri]; exists {
+	if document, exists := w.Documents[uri]; exists {
 		document.Content = content
-		document.Tree = s.TreeSitter.Parser.Parse([]byte(document.Content), document.Tree)
+		document.Tree = w.TreeSitter.Parser.Parse([]byte(document.Content), document.Tree)
 
 		return
 	}
 
 	// If the document doesn't exist, create a new one
-	s.AddDocumentLocked(uri, content)
+	w.AddDocumentLocked(uri, content)
 }
 
-func (s *State) CloseDocument(uri string) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (w *Workspace) CloseDocument(uri string) {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 
-	if document, exists := s.Documents[uri]; exists && document.Tree != nil {
+	if document, exists := w.Documents[uri]; exists && document.Tree != nil {
 		document.Tree.Close()
 		document.Tree = nil
 	}
 
-	delete(s.Documents, uri)
+	delete(w.Documents, uri)
 }
 
-func (s *State) GetSyntaxTree(uri string) (*tree_sitter.Tree, bool) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+func (w *Workspace) GetSyntaxTree(uri string) (*tree_sitter.Tree, bool) {
+	w.mutex.RLock()
+	defer w.mutex.RUnlock()
 
-	document, exists := s.Documents[uri]
+	document, exists := w.Documents[uri]
 
 	if !exists || document.Tree == nil {
 		return nil, false

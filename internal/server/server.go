@@ -15,11 +15,11 @@ type handler func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Reques
 
 type Server struct {
 	Logger   logger.Logger
-	state    *workspace.State
+	state    *workspace.Workspace
 	handlers map[string]handler
 }
 
-func NewServer(logger logger.Logger, state *workspace.State) *Server {
+func NewServer(logger logger.Logger, state *workspace.Workspace) *Server {
 	handler := &Server{
 		Logger:   logger,
 		state:    state,

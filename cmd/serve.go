@@ -79,7 +79,7 @@ func setupLogging(c *cli.Command) logger.Logger {
 }
 
 func setupServer(log logger.Logger, ts *parser.TreeSitter) (*server.Server, error) {
-	state := workspace.NewState(&workspace.NewStateOptions{
+	state := workspace.NewWorkspace(&workspace.Options{
 		TreeSitter: ts,
 		Logger:     log,
 	})

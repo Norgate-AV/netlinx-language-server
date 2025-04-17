@@ -23,7 +23,7 @@ func TestLSPHandlerCreation(t *testing.T) {
 
 	defer ts.Close()
 
-	state := workspace.NewState(&workspace.NewStateOptions{
+	state := workspace.NewWorkspace(&workspace.Options{
 		TreeSitter: ts,
 		Logger:     log,
 	})

@@ -1,4 +1,4 @@
-package workspace
+package semantic
 
 // import (
 // 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"

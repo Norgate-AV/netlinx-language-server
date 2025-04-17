@@ -36,8 +36,8 @@ func TestStdioTransport_ReplacesStdinAndStdout(t *testing.T) {
 
 	os.Stdin, os.Stdout = origStdin, origStdout
 
-	w.Close()
-	r.Close()
+	_ = w.Close()
+	_ = r.Close()
 }
 
 func TestStdioTransport_StartReturnsChannel(t *testing.T) {
@@ -52,7 +52,7 @@ func TestStdioTransport_StartReturnsChannel(t *testing.T) {
 
 	// Simple handler
 	handler := jsonrpc2.HandlerWithError(
-		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
+		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (any, error) {
 			return nil, nil
 		})
 
@@ -64,8 +64,8 @@ func TestStdioTransport_StartReturnsChannel(t *testing.T) {
 	assert.NotNil(t, disconnectCh)
 
 	// Clean up pipes
-	w1.Close()
-	r2.Close()
+	_ = w1.Close()
+	_ = r2.Close()
 }
 
 func TestStdioTransport_CanBeStartedAndStopped(t *testing.T) {
@@ -99,6 +99,6 @@ func TestStdioTransport_CanBeStartedAndStopped(t *testing.T) {
 	}
 
 	// Clean up pipes
-	w1.Close()
-	r2.Close()
+	_ = w1.Close()
+	_ = r2.Close()
 }

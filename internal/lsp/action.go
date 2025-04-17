@@ -9,12 +9,12 @@ type CodeAction struct {
 }
 
 type CodeActionParams struct {
-    TextDocument TextDocumentIdentifier `json:"textDocument"`
-    Range        Range                  `json:"range"`
-    Context      CodeActionContext      `json:"context"`
+	TextDocument TextDocumentIdentifier `json:"textDocument"`
+	Range        Range                  `json:"range"`
+	Context      CodeActionContext      `json:"context"`
 }
 
 type CodeActionContext struct {
-    Diagnostics []Diagnostic `json:"diagnostics"`
-    Only        []string     `json:"only,omitempty"`
+	Diagnostics []Diagnostic `json:"diagnostics"`
+	Only        []string     `json:"only,omitempty"`
 }

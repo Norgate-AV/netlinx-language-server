@@ -11,12 +11,12 @@ type MockConn struct {
 	// Tracking for Reply calls
 	ReplyCalled bool
 	ReplyID     jsonrpc2.ID
-	ReplyResult interface{}
+	ReplyResult any
 	ReplyError  error
 }
 
 // Reply implements the jsonrpc2.Conn Reply method
-func (c *MockConn) Reply(ctx context.Context, id jsonrpc2.ID, result interface{}) error {
+func (c *MockConn) Reply(ctx context.Context, id jsonrpc2.ID, result any) error {
 	c.ReplyCalled = true
 	c.ReplyID = id
 	c.ReplyResult = result

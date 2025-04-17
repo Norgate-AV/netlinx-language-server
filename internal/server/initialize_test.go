@@ -19,13 +19,13 @@ func TestInitializeResponseFormat(t *testing.T) {
 	}
 
 	// Check raw JSON format for capability structure
-	var rawJSON map[string]interface{}
+	var rawJSON map[string]any
 	if err := json.Unmarshal(data, &rawJSON); err != nil {
 		t.Fatalf("Failed to parse JSON: %v", err)
 	}
 
 	// Validate capabilities field exists and is an object
-	capabilities, ok := rawJSON["capabilities"].(map[string]interface{})
+	capabilities, ok := rawJSON["capabilities"].(map[string]any)
 	if !ok {
 		t.Fatal("Expected capabilities to be an object")
 	}
@@ -54,7 +54,7 @@ func TestInitializeResponseFormat(t *testing.T) {
     }`
 
 	// Compare JSON structure (ignoring whitespace)
-	var expected, actual interface{}
+	var expected, actual any
 	if err := json.Unmarshal([]byte(expectedJSON), &expected); err != nil {
 		t.Fatalf("Invalid expected JSON: %v", err)
 	}

@@ -34,8 +34,13 @@ func (t *PipeTransport) Start(ctx context.Context, handler jsonrpc2.Handler) (<-
 	outPipePath := filepath.Join(tempDir, fmt.Sprintf("%s-out", t.name))
 
 	// Clean up existing pipes
-	os.Remove(inPipePath)
-	os.Remove(outPipePath)
+	if err := os.Remove(inPipePath); err != nil && !os.IsNotExist(err) {
+		t.logger.Error(fmt.Sprintf("Failed to remove input pipe: %v", err), nil)
+	}
+
+	if err := os.Remove(outPipePath); err != nil && !os.IsNotExist(err) {
+		t.logger.Error(fmt.Sprintf("Failed to remove output pipe: %v", err), nil)
+	}
 
 	// Create output FIFO (to client)
 	outFifo, err := fifo.OpenFifo(ctx, outPipePath, syscall.O_WRONLY|syscall.O_CREAT, 0o666)
@@ -49,7 +54,11 @@ func (t *PipeTransport) Start(ctx context.Context, handler jsonrpc2.Handler) (<-
 	// Create input FIFO (from client)
 	inFifo, err := fifo.OpenFifo(ctx, inPipePath, syscall.O_RDONLY|syscall.O_CREAT, 0o666)
 	if err != nil {
-		outFifo.Close()
+		closeErr := outFifo.Close()
+		if closeErr != nil {
+			t.logger.Error(fmt.Sprintf("Failed to close output pipe: %v", closeErr), nil)
+		}
+
 		return nil, fmt.Errorf("failed to create input pipe: %w", err)
 	}
 

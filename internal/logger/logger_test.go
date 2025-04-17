@@ -214,8 +214,7 @@ func TestFileLogger(t *testing.T) {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
 
-	defer os.Remove(tmpFile.Name())
-	tmpFile.Close()
+	_ = tmpFile.Close()
 
 	logger, err := logger.NewFileLogger(tmpFile.Name())
 	if err != nil {
@@ -233,4 +232,6 @@ func TestFileLogger(t *testing.T) {
 	if !strings.Contains(string(content), "Test file logging") {
 		t.Errorf("Expected log to contain 'Test file logging', got: %s", content)
 	}
+
+	_ = os.Remove(tmpFile.Name())
 }

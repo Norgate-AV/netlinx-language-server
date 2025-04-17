@@ -145,12 +145,12 @@ func createSymbol(name string, kind lsp.SymbolKind, node *tree_sitter.Node) lsp.
 		Name: name,
 		Kind: kind,
 		Range: lsp.Range{
-			Start: lsp.Position{Line: uint32(startPos.Row), Character: uint32(startPos.Column)},
-			End:   lsp.Position{Line: uint32(endPos.Row), Character: uint32(endPos.Column)},
+			Start: lsp.Position{Line: startPos.Row, Character: startPos.Column},
+			End:   lsp.Position{Line: endPos.Row, Character: endPos.Column},
 		},
 		SelectionRange: lsp.Range{
-			Start: lsp.Position{Line: uint32(startPos.Row), Character: uint32(startPos.Column)},
-			End:   lsp.Position{Line: uint32(endPos.Row), Character: uint32(endPos.Column)},
+			Start: lsp.Position{Line: startPos.Row, Character: startPos.Column},
+			End:   lsp.Position{Line: endPos.Row, Character: endPos.Column},
 		},
 		Children: []lsp.DocumentSymbol{},
 	}

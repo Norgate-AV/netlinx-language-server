@@ -28,13 +28,13 @@ func TestInitializeResultSerialization(t *testing.T) {
 	}
 
 	// Verify the JSON output
-	var jsonMap map[string]interface{}
+	var jsonMap map[string]any
 	if err := json.Unmarshal(data, &jsonMap); err != nil {
 		t.Fatalf("Failed to deserialize JSON: %v", err)
 	}
 
 	// Check if the capabilities are present
-	capabilities, ok := jsonMap["capabilities"].(map[string]interface{})
+	capabilities, ok := jsonMap["capabilities"].(map[string]any)
 	if !ok {
 		t.Fatal("Missing or invalid capabilities field")
 	}
@@ -45,12 +45,15 @@ func TestInitializeResultSerialization(t *testing.T) {
 	}
 
 	// Verify text document sync is set correctly
-	if textDocSync, ok := capabilities["textDocumentSync"].(float64); !ok || int(textDocSync) != int(lsp.TextDocumentSyncKindIncremental) {
-		t.Errorf("Expected textDocumentSync to be %d, got %v", lsp.TextDocumentSyncKindIncremental, capabilities["textDocumentSync"])
+	if textDocSync, ok := capabilities["textDocumentSync"].(float64); !ok ||
+		int(textDocSync) != int(lsp.TextDocumentSyncKindIncremental) {
+		t.Errorf("Expected textDocumentSync to be %d, got %v",
+			lsp.TextDocumentSyncKindIncremental,
+			capabilities["textDocumentSync"])
 	}
 
 	// Check server info
-	serverInfo, ok := jsonMap["serverInfo"].(map[string]interface{})
+	serverInfo, ok := jsonMap["serverInfo"].(map[string]any)
 	if !ok {
 		t.Fatal("Missing or invalid serverInfo field")
 	}
@@ -93,12 +96,12 @@ func TestInitializeRequestParamsSerialization(t *testing.T) {
 	}
 
 	// Verify the JSON output
-	var jsonMap map[string]interface{}
+	var jsonMap map[string]any
 	if err := json.Unmarshal(data, &jsonMap); err != nil {
 		t.Fatalf("Failed to unmarshal JSON to map: %v", err)
 	}
 
-	clientInfo, ok := jsonMap["clientInfo"].(map[string]interface{})
+	clientInfo, ok := jsonMap["clientInfo"].(map[string]any)
 	if !ok {
 		t.Fatal("Missing or invalid clientInfo field")
 	}

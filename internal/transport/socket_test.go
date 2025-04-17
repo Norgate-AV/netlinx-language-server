@@ -23,7 +23,7 @@ func TestSocketTransport_Creation(t *testing.T) {
 	// Check that no listener is active yet
 	assert.Empty(t, transport.Address(), "Address should be empty before Start()")
 
-	transport.Close()
+	_ = transport.Close()
 }
 
 func TestSocketTransport_SpecificPort(t *testing.T) {
@@ -39,19 +39,18 @@ func TestSocketTransport_SpecificPort(t *testing.T) {
 	require.NotNil(t, transport)
 
 	// Cleanup
-	transport.Close()
+	_ = transport.Close()
 }
 
 func TestSocketTransport_StartReturnsChannel(t *testing.T) {
 	// Arrange
 	testLogger := test.NewTestLogger(t)
 	transport, _ := transport.NewSocketTransport("0", testLogger)
-	defer transport.Close()
 
 	ctx := context.Background()
 
 	handler := jsonrpc2.HandlerWithError(
-		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
+		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (any, error) {
 			return nil, nil
 		})
 
@@ -65,19 +64,20 @@ func TestSocketTransport_StartReturnsChannel(t *testing.T) {
 	// Cleanup - cancel context to stop listener
 	_, cancel := context.WithCancel(context.Background())
 	cancel()
+
+	_ = transport.Close()
 }
 
 func TestSocketTransport_AddressAfterStart(t *testing.T) {
 	// Arrange
 	testLogger := test.NewTestLogger(t)
 	transport, _ := transport.NewSocketTransport("0", testLogger)
-	defer transport.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	handler := jsonrpc2.HandlerWithError(
-		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (interface{}, error) {
+		func(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (any, error) {
 			return nil, nil
 		})
 
@@ -88,6 +88,8 @@ func TestSocketTransport_AddressAfterStart(t *testing.T) {
 	// Assert
 	address := transport.Address()
 	assert.NotEmpty(t, address, "Address should not be empty after Start()")
+
+	_ = transport.Close()
 }
 
 func TestSocketTransport_Close(t *testing.T) {

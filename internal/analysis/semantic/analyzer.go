@@ -155,9 +155,6 @@ func (a *Analyzer) processDeviceSection(doc *Document, section *Section, content
 	// }
 }
 
-// Additional helper methods (processConstantSection, processVariableSection, etc.)
-// ...
-
 // Helper to convert node to LSP Range
 func nodeToRange(node *tree_sitter.Node) lsp.Range {
 	start := node.StartPosition()
@@ -165,23 +162,23 @@ func nodeToRange(node *tree_sitter.Node) lsp.Range {
 
 	return lsp.Range{
 		Start: lsp.Position{
-			Line:      uint32(start.Row),
-			Character: uint32(start.Column),
+			Line:      start.Row,
+			Character: start.Column,
 		},
 		End: lsp.Position{
-			Line:      uint32(end.Row),
-			Character: uint32(end.Column),
+			Line:      end.Row,
+			Character: end.Column,
 		},
 	}
 }
 
-func getNodeText(node *tree_sitter.Node, content []byte) string {
-	start := node.StartByte()
-	end := node.EndByte()
+// func getNodeText(node *tree_sitter.Node, content []byte) string {
+// 	start := node.StartByte()
+// 	end := node.EndByte()
 
-	if start >= end || uint(len(content)) < end {
-		return ""
-	}
+// 	if start >= end || uint(len(content)) < end {
+// 		return ""
+// 	}
 
-	return string(content[start:end])
-}
+// 	return string(content[start:end])
+// }

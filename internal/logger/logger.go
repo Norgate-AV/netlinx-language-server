@@ -180,7 +180,7 @@ func (l *StructuredLogger) GetFilePath() string {
 
 func EnsureLogDirectoryExists(logPath string) error {
 	logDir := filepath.Dir(logPath)
-	return os.MkdirAll(logDir, 0o755)
+	return os.MkdirAll(logDir, 0o750)
 }
 
 func GetDefaultLogPath() string {

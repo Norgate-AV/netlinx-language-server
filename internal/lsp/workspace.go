@@ -10,7 +10,7 @@ type WorkspaceCapabilities struct {
 }
 
 type DidChangeConfigurationParams struct {
-	Settings interface{} `json:"settings"`
+	Settings any `json:"settings"`
 }
 
 type DidChangeWatchedFilesParams struct {

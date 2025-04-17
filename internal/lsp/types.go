@@ -8,8 +8,8 @@ type (
 type LSPAny = any
 
 type Position struct {
-	Line      uint32 `json:"line"`
-	Character uint32 `json:"character"`
+	Line      uint `json:"line"`
+	Character uint `json:"character"`
 }
 
 type Range struct {

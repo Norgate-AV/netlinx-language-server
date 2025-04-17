@@ -13,10 +13,10 @@ import (
 	"github.com/sourcegraph/jsonrpc2"
 )
 
-func Shutdown(s *server.Server, ctx context.Context, conn interface{}, req *jsonrpc2.Request) {
+func Shutdown(s *server.Server, ctx context.Context, conn any, req *jsonrpc2.Request) {
 	// Type assertion to check if conn implements the necessary method
 	if replier, ok := conn.(interface {
-		Reply(ctx context.Context, id jsonrpc2.ID, result interface{}) error
+		Reply(ctx context.Context, id jsonrpc2.ID, result any) error
 	}); ok {
 		s.Logger.LogServerEvent("Shutdown")
 

@@ -32,7 +32,10 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 		})
 
 		s.Logger.LogResponse(req.Method, req.ID)
-		conn.Reply(ctx, req.ID, nil)
+
+		if err := conn.Reply(ctx, req.ID, nil); err != nil {
+			s.Logger.Error(fmt.Sprintf("Failed to send empty hover response: %v", err), nil)
+		}
 
 		return
 	}
@@ -50,7 +53,10 @@ func (s *Server) Hover(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.R
 		})
 
 		s.Logger.LogResponse(req.Method, req.ID)
-		conn.Reply(ctx, req.ID, nil)
+
+		if err := conn.Reply(ctx, req.ID, nil); err != nil {
+			s.Logger.Error(fmt.Sprintf("Failed to send empty hover response: %v", err), nil)
+		}
 
 		return
 	}
@@ -111,9 +117,10 @@ func createHoverForSymbol(symbol *semantic.Symbol) string {
 		return fmt.Sprintf("**Constant %s:** %s\n\n%s", symbol.DataType, symbol.Name, symbol.Value)
 	case semantic.VariableSymbol:
 		varType := "Variable"
-		if symbol.VariableKind == semantic.VolatileVar {
+		switch symbol.VariableKind {
+		case semantic.VolatileVar:
 			varType = "Volatile Variable"
-		} else if symbol.VariableKind == semantic.NonVolatileVar {
+		case semantic.NonVolatileVar:
 			varType = "Non-volatile Variable"
 		}
 		return fmt.Sprintf("**%s %s:** %s", varType, symbol.DataType, symbol.Name)

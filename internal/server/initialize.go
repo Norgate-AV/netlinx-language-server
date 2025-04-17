@@ -19,7 +19,8 @@ func (s *Server) Initialize(ctx context.Context, conn *jsonrpc2.Conn, req *jsonr
 			"error": err.Error(),
 		})
 
-		s.sendError(ctx, conn, req.ID, createError(jsonrpc2.CodeParseError, fmt.Sprintf("Invalid initialize params: %v", err)))
+		s.sendError(ctx, conn, req.ID, createError(jsonrpc2.CodeParseError,
+			fmt.Sprintf("Invalid initialize params: %v", err)))
 
 		return
 	}

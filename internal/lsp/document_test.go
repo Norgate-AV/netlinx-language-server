@@ -36,8 +36,8 @@ func TestDidOpenTextDocumentParamsSerialization(t *testing.T) {
 }
 
 func TestTextDocumentContentChangeEventSerialization(t *testing.T) {
-	line := uint32(5)
-	character := uint32(10)
+	line := uint(5)
+	character := uint(10)
 	changeEvent := lsp.TextDocumentContentChangeEvent{
 		Range: &lsp.Range{
 			Start: lsp.Position{Line: line, Character: character},

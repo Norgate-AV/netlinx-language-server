@@ -9,16 +9,11 @@ run:
 
 linters:
   enable:
-    # - errcheck
-    # - gofmt
-    # - goimports
-    # - gosimple
-    - govet
-    - ineffassign
-    # - staticcheck
-    # - typecheck
-    # - unused
-    # - lll
+    - lll
+    - misspell
+    - gosec
+    # - revive
+    - goconst
 
 issues:
   exclude-rules:
@@ -31,3 +26,8 @@ linters-settings:
     line-length: 120
   goimports:
     local-prefixes: github.com/Norgate-AV/netlinx-language-server
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

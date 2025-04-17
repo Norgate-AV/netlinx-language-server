@@ -7,6 +7,8 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 )
 
+const testFileURI = "file:///test.axs"
+
 func TestDiagnosticSerialization(t *testing.T) {
 	severity := lsp.DiagnosticSeverityError
 	source := "netlinx-lsp"
@@ -42,7 +44,7 @@ func TestPublishDiagnosticsParamsSerialization(t *testing.T) {
 	severity := lsp.DiagnosticSeverityError
 	source := "netlinx-lsp"
 	params := lsp.PublishDiagnosticsParams{
-		URI: "file:///test.axs",
+		URI: testFileURI,
 		Diagnostics: []lsp.Diagnostic{
 			{
 				Range: lsp.Range{
@@ -66,8 +68,8 @@ func TestPublishDiagnosticsParamsSerialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal PublishDiagnosticsParams: %v", err)
 	}
 
-	if unmarshaled.URI != "file:///test.axs" {
-		t.Errorf("Expected URI 'file:///test.axs', got '%s'", unmarshaled.URI)
+	if unmarshaled.URI != testFileURI {
+		t.Errorf("Expected URI '%s', got '%s'", testFileURI, unmarshaled.URI)
 	}
 	if len(unmarshaled.Diagnostics) != 1 {
 		t.Fatalf("Expected 1 diagnostic, got %d", len(unmarshaled.Diagnostics))

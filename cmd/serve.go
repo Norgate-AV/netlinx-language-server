@@ -114,7 +114,14 @@ func startTransport(_ context.Context, c *cli.Command, log logger.Logger, server
 		return err
 	}
 
-	defer t.Close()
+	defer func() {
+		if err := t.Close(); err != nil {
+			log.Error("Failed to close transport", logrus.Fields{
+				"error": err.Error(),
+				"type":  transportType,
+			})
+		}
+	}()
 
 	log.LogServerEvent(fmt.Sprintf("Starting server with %s transport", transportType))
 

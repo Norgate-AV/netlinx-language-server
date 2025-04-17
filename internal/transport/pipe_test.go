@@ -26,7 +26,7 @@ func TestPipeTransport_Creation(t *testing.T) {
 	require.NotNil(t, pipeTransport)
 
 	// Cleanup
-	pipeTransport.Close()
+	_ = pipeTransport.Close()
 }
 
 func TestPipeTransport_PipesNotCreatedUntilStart(t *testing.T) {
@@ -37,7 +37,6 @@ func TestPipeTransport_PipesNotCreatedUntilStart(t *testing.T) {
 	// Act
 	pipeTransport, err := transport.NewPipeTransport(pipeName, testLogger)
 	require.NoError(t, err)
-	defer pipeTransport.Close()
 
 	// Assert
 	tempDir := os.TempDir()
@@ -49,6 +48,8 @@ func TestPipeTransport_PipesNotCreatedUntilStart(t *testing.T) {
 
 	_, err = os.Stat(outPipePath)
 	assert.True(t, os.IsNotExist(err), "Output pipe should not exist before Start()")
+
+	_ = pipeTransport.Close()
 }
 
 func TestPipeTransport_StartReturnsChannel(t *testing.T) {
@@ -60,14 +61,15 @@ func TestPipeTransport_StartReturnsChannel(t *testing.T) {
 	// Arrange
 	pipeTransport, err := transport.NewPipeTransport(pipeName, testLogger)
 	require.NoError(t, err)
-	defer pipeTransport.Close()
 
 	// This is more of an interface/compilation test
 	// We're just ensuring the Start method returns a channel of the right type
-	var _ func() (<-chan struct{}, error) = func() (<-chan struct{}, error) {
+	_ = func() (<-chan struct{}, error) {
 		return pipeTransport.Start(context.Background(), nil)
 	}
 
 	// No actual assertion needed - if it compiles, the test passes
 	assert.True(t, true, "Start method exists and returns a channel")
+
+	_ = pipeTransport.Close()
 }

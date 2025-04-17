@@ -27,6 +27,59 @@ The `netlinx-language-server` is a Language Server Protocol (LSP) implementation
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Installation :zap:
+
+## macOS
+
+```sh
+brew install norgate-av/tap/netlinx-language-server
+```
+
+## Linux
+
+<!-- ### Debian/Ubuntu
+
+Add the repository to your system:
+
+```sh
+
+``` -->
+
+### Arch (AUR)
+
+```sh
+paru -S netlinx-language-server-bin
+# or
+yay -S netlinx-language-server-bin
+```
+
+### Snap
+
+```sh
+snap install netlinx-language-server
+```
+
+## Windows
+
+### Scoop
+
+```sh
+scoop bucket add norgate-av
+scoop install netlinx-language-server
+```
+
+### Chocolatey
+
+```sh
+choco install norgate-av/netlinx-language-server
+```
+
+### Winget
+
+```sh
+winget install norgate-av.netlinx-language-server
+```
+
 ## Team :soccer:
 
 This project is maintained by the following person(s) and a bunch of [awesome contributors](https://github.com/Norgate-AV/netlinx-language-server/graphs/contributors).

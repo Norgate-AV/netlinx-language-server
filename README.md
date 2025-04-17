@@ -24,10 +24,11 @@ The `netlinx-language-server` is a Language Server Protocol (LSP) implementation
 
 - [Installation :zap:](#installation-zap)
   - [macOS](#macos)
+  - [Nix](#nix)
   - [Linux](#linux)
     - [Debian/Ubuntu](#debianubuntu)
     - [Fedora/RHEL/CentOS](#fedorarhelcentos)
-    - [Apline](#apline)
+    - [Alpine](#alpine)
     - [Arch (AUR)](#arch-aur)
     - [Snap](#snap)
   - [Windows](#windows)
@@ -47,6 +48,12 @@ The `netlinx-language-server` is a Language Server Protocol (LSP) implementation
 
 ```sh
 brew install norgate-av/tap/netlinx-language-server
+```
+
+### Nix
+
+```sh
+nix-env -iA nixpkgs.norgate-av.netlinx-language-server
 ```
 
 ### Linux
@@ -72,7 +79,7 @@ sudo apt install netlinx-language-server
 sudo rpm -i netlinx-language-server_[version]_[arch].rpm
 ```
 
-#### Apline
+#### Alpine
 
 ```sh
 # Download the APK package

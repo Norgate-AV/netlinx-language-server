@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   modules-download-mode: readonly
   allow-parallel-runners: true
@@ -7,15 +9,16 @@ run:
 
 linters:
   enable:
-    - errcheck
-    - gofmt
-    - goimports
-    - gosimple
+    # - errcheck
+    # - gofmt
+    # - goimports
+    # - gosimple
     - govet
     - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
+    # - staticcheck
+    # - typecheck
+    # - unused
+    # - lll
 
 issues:
   exclude-rules:
@@ -24,5 +27,7 @@ issues:
         - errcheck
 
 linters-settings:
+  lll:
+    line-length: 120
   goimports:
     local-prefixes: github.com/Norgate-AV/netlinx-language-server

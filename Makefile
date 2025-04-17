@@ -4,7 +4,7 @@ BUILD_DIR = build
 VERSION = 0.1.0
 LDFLAGS = -ldflags "-X main.Version=$(VERSION)"
 
-.PHONY: build clean test test-cover test-report run fmt lint install
+.PHONY: build clean test test-coverage test-report run fmt lint install
 
 # Default target
 all: fmt lint test build

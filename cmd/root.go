@@ -8,21 +8,16 @@ import (
 	"strconv"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/config"
+	"github.com/Norgate-AV/netlinx-language-server/internal/version"
 
 	"github.com/urfave/cli/v3"
-)
-
-var (
-	version = "dev"
-	commit  = ""
-	date    = ""
 )
 
 func NewRootCommand() *cli.Command {
 	app := &cli.Command{
 		Name:      config.AppName,
 		Usage:     config.AppDescription,
-		Version:   version,
+		Version:   version.BuildInfo(),
 		Copyright: config.Copyright,
 
 		HideHelpCommand: true,
@@ -81,10 +76,6 @@ func NewRootCommand() *cli.Command {
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			return serve(ctx, cmd)
 		},
-	}
-
-	if commit != "" && date != "" {
-		app.Version = fmt.Sprintf("%s (%s, %s)", version, commit, date)
 	}
 
 	return app

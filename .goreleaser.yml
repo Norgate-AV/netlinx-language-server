@@ -8,7 +8,7 @@ before:
 
 builds:
   - id: linux-darwin
-    main: ./cmd/netlinx-language-server
+    main: .
     binary: netlinx-language-server
     goos:
       - linux
@@ -25,7 +25,7 @@ builds:
       - -X main.date={{.Date}}
 
   - id: windows
-    main: ./cmd/netlinx-language-server
+    main: .
     binary: netlinx-language-server
     goos:
       - windows

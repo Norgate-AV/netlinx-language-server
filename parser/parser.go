@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 
 	tree_sitter_netlinx "github.com/norgate-av/tree-sitter-netlinx/bindings/go"
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
@@ -68,3 +69,78 @@ func CreateQueryCursor() *tree_sitter.QueryCursor {
 
 // 	return node
 // }
+
+type PrettyPrintOptions struct {
+	// Ranges indicates whether to include ranges in the output
+	ShowRanges bool
+}
+
+// PrettyPrintSexp formats a tree as S-expression
+func PrettyPrint(tree *tree_sitter.Tree, options PrettyPrintOptions) string {
+	var result strings.Builder
+
+	cursor := tree.Walk()
+	defer cursor.Close()
+
+	indentLevel := 0
+	needsNewline := false
+	didVisitChildren := false
+
+	for {
+		node := cursor.Node()
+		isNamed := node.IsNamed()
+
+		if didVisitChildren {
+			if isNamed {
+				result.WriteString(")")
+				needsNewline = true
+			}
+
+			if cursor.GotoNextSibling() {
+				didVisitChildren = false
+			} else if cursor.GotoParent() {
+				didVisitChildren = true
+				indentLevel -= 1
+			} else {
+				break
+			}
+		} else {
+			if isNamed {
+				if needsNewline {
+					result.WriteString("\n")
+				}
+
+				for range indentLevel {
+					result.WriteString("  ")
+				}
+
+				fieldName := cursor.FieldName()
+				if fieldName != "" {
+					result.WriteString(fieldName)
+					result.WriteString(": ")
+				}
+
+				result.WriteString("(")
+				result.WriteString(node.Kind())
+
+				if options.ShowRanges {
+					start := node.StartPosition()
+					end := node.EndPosition()
+					result.WriteString(fmt.Sprintf(" [%d, %d] - [%d, %d]", start.Row, start.Column, end.Row, end.Column))
+				}
+
+				needsNewline = true
+			}
+
+			if cursor.GotoFirstChild() {
+				didVisitChildren = false
+				indentLevel += 1
+			} else {
+				didVisitChildren = true
+			}
+		}
+	}
+
+	result.WriteString("\n")
+	return result.String()
+}

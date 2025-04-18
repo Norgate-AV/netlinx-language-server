@@ -28,17 +28,17 @@ const (
 )
 
 // Symbol represents a NetLinx symbol with semantic information
-type Symbol struct {
-	Name         string
-	Type         SymbolType
-	DataType     string // INTEGER, CHAR, etc.
-	Value        string // Initial value if any
-	VariableKind VariableKind
-	Range        lsp.Range
-	Section      *Section // Parent section
-	Node         *tree_sitter.Node
-	Children     []*Symbol // For hierarchical symbols
-}
+// type Symbol struct {
+// 	Name         string
+// 	Type         SymbolType
+// 	DataType     string // INTEGER, CHAR, etc.
+// 	Value        string // Initial value if any
+// 	VariableKind VariableKind
+// 	Range        lsp.Range
+// 	Section      *Section // Parent section
+// 	Node         *tree_sitter.Node
+// 	Children     []*Symbol // For hierarchical symbols
+// }
 
 // Section represents a NetLinx section (DEFINE_DEVICE, etc.)
 type Section struct {

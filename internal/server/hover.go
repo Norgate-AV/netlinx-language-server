@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
-	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
 
 	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/jsonrpc2"
@@ -81,11 +80,11 @@ func (s *Server) GetHoverInfo(uri string, position lsp.Position) (*lsp.Hover, er
 		for _, symbol := range document.SemanticModel.Symbols {
 			if containsPosition(symbol.Range, position) {
 				// Create hover content based on symbol type
-				content := createHoverForSymbol(symbol)
+				// content := createHoverForSymbol(symbol)
 				return &lsp.Hover{
 					Contents: lsp.MarkupContent{
-						Kind:  lsp.MarkupKindMarkdown,
-						Value: content,
+						Kind: lsp.MarkupKindMarkdown,
+						// Value: content,
 					},
 					Range: &symbol.Range,
 				}, nil
@@ -109,23 +108,23 @@ func containsPosition(r lsp.Range, p lsp.Position) bool {
 		(p.Line < r.End.Line || (p.Line == r.End.Line && p.Character <= r.End.Character))
 }
 
-func createHoverForSymbol(symbol *semantic.Symbol) string {
-	switch symbol.Type {
-	case semantic.DeviceSymbol:
-		return fmt.Sprintf("**Device:** %s\n\n%s", symbol.Name, symbol.Value)
-	case semantic.ConstantSymbol:
-		return fmt.Sprintf("**Constant %s:** %s\n\n%s", symbol.DataType, symbol.Name, symbol.Value)
-	case semantic.VariableSymbol:
-		varType := "Variable"
-		switch symbol.VariableKind {
-		case semantic.VolatileVar:
-			varType = "Volatile Variable"
-		case semantic.NonVolatileVar:
-			varType = "Non-volatile Variable"
-		}
-		return fmt.Sprintf("**%s %s:** %s", varType, symbol.DataType, symbol.Name)
-	// Add other cases
-	default:
-		return fmt.Sprintf("**Symbol:** %s", symbol.Name)
-	}
-}
+// func createHoverForSymbol(symbol *semantic.Symbol) string {
+// 	switch symbol.Type {
+// 	case semantic.DeviceSymbol:
+// 		return fmt.Sprintf("**Device:** %s\n\n%s", symbol.Name, symbol.Value)
+// 	case semantic.ConstantSymbol:
+// 		return fmt.Sprintf("**Constant %s:** %s\n\n%s", symbol.DataType, symbol.Name, symbol.Value)
+// 	case semantic.VariableSymbol:
+// 		varType := "Variable"
+// 		switch symbol.VariableKind {
+// 		case semantic.VolatileVar:
+// 			varType = "Volatile Variable"
+// 		case semantic.NonVolatileVar:
+// 			varType = "Non-volatile Variable"
+// 		}
+// 		return fmt.Sprintf("**%s %s:** %s", varType, symbol.DataType, symbol.Name)
+// 	// Add other cases
+// 	default:
+// 		return fmt.Sprintf("**Symbol:** %s", symbol.Name)
+// 	}
+// }

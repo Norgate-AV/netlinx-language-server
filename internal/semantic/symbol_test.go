@@ -9,14 +9,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const code = `
-PROGRAM_NAME='Test'
+const code = `PROGRAM_NAME='Test'
 
 DEFINE_DEVICE
 dvTP = 10001:1:0
 
 DEFINE_CONSTANT
 MAX_USERS = 10
+USERS[][50] = {
+	'Alice',
+	'Bob',
+	'Charlie'
+}
 
 DEFINE_TYPE
 struct User {
@@ -28,26 +32,26 @@ DEFINE_VARIABLE
 INTEGER userCount
 volatile User users[MAX_USERS]
 
-DEFINE_FUNCTION integer GetUserCount() {
-	return userCount
-}
+// DEFINE_FUNCTION integer GetUserCount() {
+// 	return userCount
+// }
 
-define_function integer GetUserAge(User user) {
-	return user.age
-}
+// define_function integer GetUserAge(User user) {
+// 	return user.age
+// }
 
-DEFINE_START
-users[1].name = "Alice"
-users[1].age = 30
-userCount++
+// DEFINE_START
+// users[1].name = 'Alice'
+// users[1].age = 30
+// userCount++
 
-users[2].name = "Bob"
-users[2].age = 25
-userCount++
+// users[2].name = 'Bob'
+// users[2].age = 25
+// userCount++
 
-users[3].name = "Charlie"
-users[3].age = 35
-userCount++
+// users[3].name = 'Charlie'
+// users[3].age = 35
+// userCount++
 `
 
 func TestCollectSymbols(t *testing.T) {
@@ -59,6 +63,8 @@ func TestCollectSymbols(t *testing.T) {
 	// Act
 	tree := ts.Parser.Parse([]byte(code), nil)
 
+	print(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
+
 	symbolsTable := semantic.GetSymbolTable(tree.RootNode(), []byte(code))
 
 	for name, symbol := range symbolsTable.Symbols {
@@ -68,6 +74,7 @@ func TestCollectSymbols(t *testing.T) {
 	// Assert
 	assert.Contains(t, symbolsTable.Symbols, "dvTP")
 	assert.Contains(t, symbolsTable.Symbols, "MAX_USERS")
+	assert.Contains(t, symbolsTable.Symbols, "USERS")
 	// assert.Contains(t, symbolsTable, "userCount")
 	// assert.Contains(t, symbolsTable, "users")
 	// assert.Contains(t, symbolsTable, "GetUserCount")

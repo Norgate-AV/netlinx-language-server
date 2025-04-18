@@ -72,3 +72,46 @@ func IsLeftHandSide(parent *tree_sitter.Node, node *tree_sitter.Node) bool {
 
 	return false
 }
+
+func IsArray(node *tree_sitter.Node) bool {
+	// Check if this node is inside an array_declarator
+	current := node
+
+	for current != nil {
+		if current.Kind() == "array_declarator" {
+			return true
+		}
+
+		current = current.Parent()
+	}
+
+	return false
+}
+
+func GetArrayDimensions(node *tree_sitter.Node) uint {
+	// Find the array_declarator node
+	var arrayDecl *tree_sitter.Node
+
+	current := node
+	for current != nil {
+		if current.Kind() == "array_declarator" {
+			arrayDecl = current
+			break
+		}
+		current = current.Parent()
+	}
+
+	if arrayDecl == nil {
+		return 0
+	}
+
+	// Count the number of bracket pairs
+	dimensions := uint(0)
+	for i := uint(0); i < arrayDecl.ChildCount(); i++ {
+		if arrayDecl.Child(i).Kind() == "[" {
+			dimensions++
+		}
+	}
+
+	return dimensions
+}

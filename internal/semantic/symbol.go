@@ -103,36 +103,21 @@ func GetSymbolTable(root *tree_sitter.Node, content []byte) *SymbolTable {
 					// Eg. identifier = device_literal | expression
 					// Eg. dvTP = 10001:1:0
 					if parent.Kind() == "assignment_expression" {
-						if parent.ChildCount() > 0 {
-							firstChild := parent.Child(0)
-							if firstChild.StartByte() == node.StartByte() &&
-								firstChild.EndByte() == node.EndByte() {
-								// This is the left-hand side identifier
-
-								var value string
-								if parent.ChildCount() >= 3 { // Left side + equals + right side
-									valueNode := parent.Child(2) // Third child is the value
-									if valueNode != nil {
-										value = valueNode.Utf8Text(content)
-									}
-								}
-
-								symbol := &Symbol{
-									Name:        name,
-									Kind:        SymbolKindDevice,
-									Range:       GetNodeRange(node),
-									Node:        node,
-									StorageType: StorageTypeConstant,
-									DateType:    DataTypeDev,
-									Value:       value,
-									Size:        SizeOfDataType(DataTypeDev),
-									Dimensions:  0,
-								}
-
-								table.AddSymbol(symbol)
-							}
+						if IsLeftHandSide(parent, node) {
+							table.AddSymbol(&Symbol{
+								Name:        name,
+								Kind:        SymbolKindDevice,
+								Range:       GetNodeRange(node),
+								Node:        node,
+								StorageType: StorageTypeConstant,
+								DateType:    DataTypeDev,
+								Value:       GetNodeValue(parent, content),
+								Size:        SizeOfDataType(DataTypeDev),
+								Dimensions:  0,
+							})
 						}
 					}
+
 				case SectionDefineConstant:
 					// In DEFINE_CONSTANT section, constants can be parsed
 					// as either a declaration or an assignment expression
@@ -147,36 +132,26 @@ func GetSymbolTable(root *tree_sitter.Node, content []byte) *SymbolTable {
 					// Eg. [constant] [data_type] identifier[[size]] = value
 
 					switch parent.Kind() {
-					case "assignment_expression", "declaration":
-						if parent.ChildCount() > 0 {
-							firstChild := parent.Child(0)
-							if firstChild.StartByte() == node.StartByte() &&
-								firstChild.EndByte() == node.EndByte() {
-								// This is the left-hand side identifier
+					case "assignment_expression":
+						if IsLeftHandSide(parent, node) {
+							// Always parse as a constant
+							storageType := StorageTypeConstant
+							dataType := DataTypeInteger
 
-								var value string
-								if parent.ChildCount() >= 3 { // Left side + equals + right side
-									valueNode := parent.Child(2) // Third child is the value
-									if valueNode != nil {
-										value = valueNode.Utf8Text(content)
-									}
-								}
-
-								symbol := &Symbol{
-									Name:        name,
-									Kind:        SymbolKindConstant,
-									Range:       GetNodeRange(node),
-									Node:        node,
-									StorageType: StorageTypeConstant,
-									DateType:    DataTypeInteger,
-									Value:       value,
-									Size:        SizeOfDataType(DataTypeInteger),
-									Dimensions:  0,
-								}
-
-								table.AddSymbol(symbol)
-							}
+							table.AddSymbol(&Symbol{
+								Name:        name,
+								Kind:        SymbolKindConstant,
+								Range:       GetNodeRange(node),
+								Node:        node,
+								StorageType: storageType,
+								DateType:    dataType,
+								Value:       GetNodeValue(parent, content),
+								Size:        SizeOfDataType(dataType),
+								Dimensions:  0,
+							})
 						}
+					case "declaration":
+						// Parse declaration here
 					}
 				}
 			}

@@ -48,3 +48,27 @@ func GetNodeRange(node *tree_sitter.Node) lsp.Range {
 		},
 	}
 }
+
+func GetNodeValue(node *tree_sitter.Node, content []byte) string {
+	var value string
+
+	if node.ChildCount() >= 3 { // Left side + equals + right side
+		valueNode := node.Child(2) // Third child is the value
+		if valueNode != nil {
+			value = valueNode.Utf8Text(content)
+		}
+	}
+
+	return value
+}
+
+func IsLeftHandSide(parent *tree_sitter.Node, node *tree_sitter.Node) bool {
+	// Check if the node is a left-hand side assignment
+	if parent.ChildCount() > 0 {
+		firstChild := parent.Child(0)
+		return (firstChild.StartByte() == node.StartByte() &&
+			firstChild.EndByte() == node.EndByte())
+	}
+
+	return false
+}

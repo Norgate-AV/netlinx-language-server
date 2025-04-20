@@ -14,13 +14,13 @@ const code = `PROGRAM_NAME='Test'
 
 DEFINE_DEVICE
 constant dev dvTP1 = 10001:1:0
-dvTP2 = 10002:1:0
-dev dvTP3 = 10003:1:0
+dvTP1 = 10002:1:0
+dev dvTP1 = 10003:1:0
 volatile dvTP4 = 10004:1:0
 dvTP5 = 10005:(first_local_port+100):0
 
-// DEFINE_CONSTANT
-// MAX_USERS = 10
+DEFINE_CONSTANT
+MAX_USERS = 10
 // USERS[][50] = {
 // 	'Alice',
 // 	'Bob',
@@ -46,9 +46,11 @@ dvTP5 = 10005:(first_local_port+100):0
 // 	integer age
 // }
 
-// DEFINE_VARIABLE
-// INTEGER userCount
-// volatile User users[MAX_USERS]
+DEFINE_VARIABLE
+count
+count2 = 0
+INTEGER userCount
+volatile User users[MAX_USERS]
 
 // DEFINE_FUNCTION integer GetUserCount() {
 // 	return userCount

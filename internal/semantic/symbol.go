@@ -100,13 +100,6 @@ func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		for _, capture := range match.Captures {
-			// fmt.Printf(
-			// 	"Match %d, Capture %d (%s): %s\n",
-			// 	match.PatternIndex,
-			// 	capture.Index,
-			// 	q.CaptureNames()[capture.Index],
-			// 	capture.Node.Utf8Text(content),
-			// )
 			captureName := q.CaptureNames()[capture.Index]
 			if captureName == "device_section" {
 				currentSection = SectionDefineDevice
@@ -120,175 +113,63 @@ func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 		}
 
 		// Extract identifier, value, qualifier, and type
-		var identNode tree_sitter.Node
-		var valueNode tree_sitter.Node
-		var qualifierNode tree_sitter.Node
-		var typeNode tree_sitter.Node
+		var identNode *tree_sitter.Node
+		var valueNode *tree_sitter.Node
+		var qualifierNode *tree_sitter.Node
+		var typeNode *tree_sitter.Node
 
 		for _, capture := range match.Captures {
 			captureName := q.CaptureNames()[capture.Index]
 			switch captureName {
 			case "identifier":
-				identNode = capture.Node
+				identNode = &capture.Node
 			case "value":
-				valueNode = capture.Node
+				valueNode = &capture.Node
 			case "qualifier":
-				qualifierNode = capture.Node
+				qualifierNode = &capture.Node
 			case "type":
-				typeNode = capture.Node
+				typeNode = &capture.Node
 			}
+		}
+
+		// Skip if any of the nodes are nil
+		if identNode == nil {
+			continue
+		}
+
+		// Set default values
+		storageType := StorageTypeConstant
+		value := ""
+		dataType := DataTypeDev
+
+		if valueNode != nil {
+			value = valueNode.Utf8Text(content)
+		}
+
+		if qualifierNode != nil {
+			storageType = qualifierNode.Utf8Text(content)
+		}
+
+		if typeNode != nil {
+			dataType = typeNode.Utf8Text(content)
 		}
 
 		// Create and add the symbol
 		table.AddSymbol(&Symbol{
 			Name:        identNode.Utf8Text(content),
 			Kind:        SymbolKindDevice,
-			Range:       GetNodeRange(&identNode),
-			Node:        &identNode,
-			StorageType: qualifierNode.Utf8Text(content),
-			DataType:    typeNode.Utf8Text(content),
-			Value:       valueNode.Utf8Text(content),
-			Size:        SizeOfDataType(typeNode.Utf8Text(content)),
+			Range:       GetNodeRange(identNode),
+			Node:        identNode,
+			StorageType: storageType,
+			DataType:    dataType,
+			Value:       value,
+			Size:        SizeOfDataType(dataType),
 			Dimensions:  0,
 		})
 	}
 
 	return table
 }
-
-func processNode(node *tree_sitter.Node, content []byte, section *string, table *SymbolTable) {
-	if node == nil {
-		return
-	}
-
-	kind := node.Kind()
-
-	switch kind {
-	case "define_device_section":
-		*section = SectionDefineDevice
-	case "define_constant_section":
-		*section = SectionDefineConstant
-	case "define_variable_section":
-		*section = SectionDefineVariable
-	}
-
-	if kind != "identifier" {
-		return
-	}
-
-	name := node.Utf8Text(content)
-	parent := node.Parent()
-
-	if parent != nil && *section != "" {
-		switch *section {
-		case SectionDefineDevice:
-			processDefineDevice(node, parent, name, content, table)
-			// case SectionDefineConstant:
-			// 	processDefineConstant(node, parent, name, content, table)
-		}
-	}
-}
-
-func processDefineDevice(node *tree_sitter.Node, parent *tree_sitter.Node, name string, content []byte, table *SymbolTable) {
-	// In DEFINE_DEVICE section, device definitions are parsed
-	// as assignment expressions.
-	// Eg. identifier = device_literal | expression
-	// Eg. dvTP = 10001:1:0
-
-	if parent.Kind() == "assignment_expression" {
-		if !IsLeftHandSide(parent, node) {
-			return
-		}
-
-		table.AddSymbol(&Symbol{
-			Name:        name,
-			Kind:        SymbolKindDevice,
-			Range:       GetNodeRange(node),
-			Node:        node,
-			StorageType: StorageTypeConstant,
-			DataType:    DataTypeDev,
-			Value:       GetNodeValue(parent, content),
-			Size:        SizeOfDataType(DataTypeDev),
-			Dimensions:  0,
-		})
-	}
-}
-
-// func processDefineConstant(node *tree_sitter.Node, parent *tree_sitter.Node, name string, content []byte, table *SymbolTable) {
-// 	// In DEFINE_CONSTANT section, constants can be parsed
-// 	// as either a declaration or an assignment expression
-// 	// depending on how it is declared.
-// 	// StorageType and DataType are optional
-// 	// If not specified, it will be parsed as an assignment expression
-// 	// Otherwise, it will be parsed as a declaration
-// 	// StorageType for a constant can only be "constant" if specified
-// 	// If DataType is not specified, it is implicitly INTEGER for non array values
-// 	// Otherwise, it is implicitly CHAR for array values
-// 	// Eg. [constant] [data_type] identifier = value
-// 	// Eg. [constant] [data_type] identifier[[size]] = value
-
-// 	switch parent.Kind() {
-// 	case "assignment_expression":
-// 		if !IsLeftHandSide(parent, node) {
-// 			return
-// 		}
-
-// 		// Always parse as a constant
-// 		storageType := StorageTypeConstant
-// 		dataType := DataTypeInteger
-// 		dimensions := uint(0)
-// 		size := SizeOfDataType(dataType)
-
-// 		table.AddSymbol(&Symbol{
-// 			Name:        name,
-// 			Kind:        SymbolKindConstant,
-// 			Range:       GetNodeRange(node),
-// 			Node:        node,
-// 			StorageType: storageType,
-// 			DataType:    dataType,
-// 			Value:       GetNodeValue(parent, content),
-// 			Size:        size,
-// 			Dimensions:  dimensions,
-// 		})
-// 	case "subscript_expression":
-// 		// In this case, the identifier is part of an array declaration
-// 		// Eg. identifier[[size]] = value
-// 		// We can ignore this case as it will be handled in the array declaration
-// 		baseIdNode := GetBaseIdentifier(parent)
-
-// 		if baseIdNode != nil && baseIdNode.Kind() == "identifier" {
-// 			// Find the outermost subscript expression
-// 			outerSubscript := GetOutermostSubscriptExpression(parent)
-
-// 			// Find the assignment expression that contains this subscript
-// 			assignmentNode := FindParentOfType(outerSubscript, "assignment_expression")
-
-// 			if assignmentNode != nil && IsSubscriptLeftHandSide(assignmentNode, outerSubscript) {
-// 				baseNodeName := baseIdNode.Utf8Text(content)
-
-// 				// Now create the symbol using the base identifier
-// 				storageType := StorageTypeConstant
-// 				dataType := DataTypeChar
-// 				dimensions := GetArrayDimensions(outerSubscript)
-// 				size := SizeOfDataType(dataType) * dimensions
-
-// 				table.AddSymbol(&Symbol{
-// 					Name:        baseNodeName, // Use the base identifier name!
-// 					Kind:        SymbolKindConstant,
-// 					Range:       GetNodeRange(baseIdNode),
-// 					Node:        baseIdNode,
-// 					StorageType: storageType,
-// 					DataType:    dataType,
-// 					Value:       GetNodeValue(assignmentNode, content),
-// 					Size:        size,
-// 					Dimensions:  dimensions,
-// 				})
-// 			}
-// 		}
-// 	case "declaration":
-// 		// Parse declaration here
-// 	}
-// }
 
 const (
 	SectionDefineDevice   string = "define_device_section"

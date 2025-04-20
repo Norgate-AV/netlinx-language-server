@@ -1,6 +1,8 @@
 package semantic
 
 import (
+	"fmt"
+
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
@@ -114,4 +116,12 @@ func GetArrayDimensions(node *tree_sitter.Node) uint {
 	}
 
 	return dimensions
+}
+
+func PrintSymbolTable(table *SymbolTable) {
+	for name, symbol := range table.Symbols {
+		for i := range symbol {
+			fmt.Printf("Symbol: %s = %v\n", name, symbol[i])
+		}
+	}
 }

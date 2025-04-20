@@ -80,7 +80,7 @@ func (st *SymbolTable) AddSymbol(symbol *Symbol) {
 func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 	table := NewSymbolTable()
 
-	query, err := queries.GetQuery("device.scm")
+	query, err := queries.GetQuery("symbols.scm")
 	if err != nil {
 		return table
 	}

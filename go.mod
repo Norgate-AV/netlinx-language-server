@@ -5,12 +5,12 @@ go 1.24
 toolchain go1.24.2
 
 require (
-	github.com/norgate-av/tree-sitter-netlinx v1.0.0
+	github.com/norgate-av/tree-sitter-netlinx v1.0.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/jsonrpc2 v0.2.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tree-sitter/go-tree-sitter v0.25.0
-	github.com/urfave/cli/v3 v3.1.1
+	github.com/urfave/cli/v3 v3.2.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 

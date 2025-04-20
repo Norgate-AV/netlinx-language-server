@@ -1,6 +1,3 @@
-; Device section queries
-; File: queries/device.scm
-
 ; Track the current section
 (define_device_section) @device_section
 (define_constant_section) @constant_section
@@ -26,11 +23,3 @@
 (expression_statement
   (identifier) @identifier)
 
-; Pattern 4: [qualifier] [custom_type] <identifier> = <value>
-; ((declaration
-;   (type_qualifier)? @qualifier
-;   (type_identifier)? @type
-;   declarator: (_
-;     declarator: (identifier) @identifier
-;     size: _? @size
-;     value: _ @value)))

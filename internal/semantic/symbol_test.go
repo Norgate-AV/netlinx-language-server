@@ -21,24 +21,24 @@ dvTP5 = 10005:(first_local_port+100):0
 
 DEFINE_CONSTANT
 MAX_USERS = 10
-// USERS[][50] = {
-// 	'Alice',
-// 	'Bob',
-// 	'Charlie'
-// }
+USERS[][50] = {
+	'Alice',
+	'Bob',
+	'Charlie'
+}
 
-// MOREUSERS[][][50] = {
-// 	{
-// 		'Alice',
-// 		'Bob',
-// 		'Charlie'
-// 	},
-// 	{
-// 		'Alice',
-// 		'Bob',
-// 		'Charlie'
-// 	}
-// }
+MOREUSERS[][][50] = {
+	{
+		'Alice',
+		'Bob',
+		'Charlie'
+	},
+	{
+		'Alice',
+		'Bob',
+		'Charlie'
+	}
+}
 
 // DEFINE_TYPE
 // struct User {
@@ -52,9 +52,9 @@ count2 = 0
 INTEGER userCount
 volatile User users[MAX_USERS]
 
-// DEFINE_FUNCTION integer GetUserCount() {
-// 	return userCount
-// }
+DEFINE_FUNCTION integer GetUserCount() {
+	return userCount
+}
 
 // define_function integer GetUserAge(User user) {
 // 	return user.age

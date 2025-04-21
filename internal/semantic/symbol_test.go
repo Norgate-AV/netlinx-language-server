@@ -71,8 +71,8 @@ func TestCollectSymbols(t *testing.T) {
 	tree := ts.Parser.Parse([]byte(code), nil)
 	fmt.Println(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
 
-	symbolsTable := semantic.GetSymbolTable(tree, []byte(code))
-	semantic.PrintSymbolTable(symbolsTable)
+	symbolTable := semantic.GetSymbolTable(tree, []byte(code))
+	semantic.PrintSymbolTable(symbolTable)
 
 	// Assert
 	// assert.Contains(t, symbolsTable.Symbols, "dvTP")

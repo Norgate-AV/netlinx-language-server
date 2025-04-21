@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
-	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
@@ -37,32 +36,32 @@ func (a *Analyzer) Analyze(uri string, content string, tree *tree_sitter.Tree) (
 	a.content = []byte(content)
 
 	// Create global scope
-	a.document.GlobalScope = &Scope{
-		Symbols:   make(map[string]*Symbol),
-		Node:      tree.RootNode(),
-		Range:     nodeToRange(tree.RootNode()),
-		ScopeType: "global",
-	}
+	// a.document.GlobalScope = &Scope{
+	// 	Symbols:   make(map[string]*Symbol),
+	// 	Node:      tree.RootNode(),
+	// 	Range:     nodeToRange(tree.RootNode()),
+	// 	ScopeType: "global",
+	// }
 
 	a.document.Scopes = append(a.document.Scopes, a.document.GlobalScope)
 
 	// First pass: Collect all declarations
-	declVisitor := &DeclarationVisitor{
-		analyzer:     a,
-		currentScope: a.document.GlobalScope,
-	}
+	// declVisitor := &DeclarationVisitor{
+	// 	analyzer:     a,
+	// 	currentScope: a.document.GlobalScope,
+	// }
 
-	declWalker := NewTreeWalker(declVisitor, a.content, a.logger)
-	declWalker.Walk(tree.RootNode())
+	// declWalker := NewTreeWalker(declVisitor, a.content, a.logger)
+	// declWalker.Walk(tree.RootNode())
 
-	// Second pass: Resolve references
-	refVisitor := &ReferenceVisitor{
-		analyzer:     a,
-		currentScope: a.document.GlobalScope,
-	}
+	// // Second pass: Resolve references
+	// refVisitor := &ReferenceVisitor{
+	// 	analyzer:     a,
+	// 	currentScope: a.document.GlobalScope,
+	// }
 
-	refWalker := NewTreeWalker(refVisitor, a.content, a.logger)
-	refWalker.Walk(tree.RootNode())
+	// refWalker := NewTreeWalker(refVisitor, a.content, a.logger)
+	// refWalker.Walk(tree.RootNode())
 
 	return a.document, nil
 }
@@ -166,31 +165,3 @@ func (a *Analyzer) Analyze(uri string, content string, tree *tree_sitter.Tree) (
 // 	// 	}
 // 	// }
 // }
-
-// Helper to convert node to LSP Range
-func nodeToRange(node *tree_sitter.Node) lsp.Range {
-	start := node.StartPosition()
-	end := node.EndPosition()
-
-	return lsp.Range{
-		Start: lsp.Position{
-			Line:      start.Row,
-			Character: start.Column,
-		},
-		End: lsp.Position{
-			Line:      end.Row,
-			Character: end.Column,
-		},
-	}
-}
-
-func getNodeText(node *tree_sitter.Node, content []byte) string {
-	start := node.StartByte()
-	end := node.EndByte()
-
-	if start >= end || uint(len(content)) < end {
-		return ""
-	}
-
-	return string(content[start:end])
-}

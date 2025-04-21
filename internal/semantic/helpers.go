@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 
@@ -125,3 +126,154 @@ func PrintSymbolTable(table *SymbolTable) {
 		}
 	}
 }
+
+func GetMatchCount(query *tree_sitter.Query, tree *tree_sitter.Tree) int {
+	count := 0
+
+	cursor := tree_sitter.NewQueryCursor()
+	defer cursor.Close()
+
+	matches := cursor.Matches(query, tree.RootNode(), nil)
+
+	for matches.Next() != nil {
+		count++
+	}
+
+	return count
+}
+
+func isSectionMatch(match *tree_sitter.QueryMatch, query *tree_sitter.Query) bool {
+	for _, capture := range match.Captures {
+		name := query.CaptureNames()[capture.Index]
+
+		if strings.HasPrefix(name, "section.") {
+			return true
+		}
+	}
+
+	return false
+}
+
+func getSectionType(match *tree_sitter.QueryMatch, query *tree_sitter.Query) string {
+	for _, capture := range match.Captures {
+		name := query.CaptureNames()[capture.Index]
+
+		if strings.HasPrefix(name, "section.") {
+			// May want to trim the prefix here?
+			return name
+		}
+	}
+
+	return ""
+}
+
+// IsInSubscriptExpression checks if a node is part of a subscript expression
+// func IsInSubscriptExpression(node *tree_sitter.Node) bool {
+// 	current := node
+// 	for current != nil && current.Parent() != nil {
+// 		parent := current.Parent()
+// 		if parent.Kind() == "subscript_expression" {
+// 			for i := uint(0); i < parent.NamedChildCount(); i++ {
+// 				if parent.NamedChild(i).Equals(*current) ||
+// 					(parent.ChildByFieldName("argument") != nil &&
+// 						parent.ChildByFieldName("argument").Equals(*current)) {
+// 					return true
+// 				}
+// 			}
+// 		}
+// 		current = parent
+// 	}
+// 	return false
+// }
+
+// GetBaseIdentifier gets the base identifier in a subscript expression
+// func GetBaseIdentifier(node *tree_sitter.Node) *tree_sitter.Node {
+// 	if node.Kind() == "identifier" {
+// 		return node
+// 	}
+
+// 	current := node
+// 	for current != nil && current.Kind() == "subscript_expression" {
+// 		argument := current.ChildByFieldName("argument")
+// 		if argument != nil {
+// 			if argument.Kind() == "identifier" {
+// 				return argument
+// 			}
+// 			current = argument
+// 		} else {
+// 			break
+// 		}
+// 	}
+
+// 	return nil
+// }
+
+// GetOutermostSubscriptExpression finds the outermost subscript_expression
+// func GetOutermostSubscriptExpression(node *tree_sitter.Node) *tree_sitter.Node {
+// 	if node.Kind() != "subscript_expression" && node.Parent() == nil {
+// 		return nil
+// 	}
+
+// 	var current *tree_sitter.Node
+
+// 	// Find the first subscript expression
+// 	temp := node
+// 	for temp != nil {
+// 		if temp.Kind() == "subscript_expression" {
+// 			current = temp
+// 			break
+// 		}
+// 		if temp.Parent() != nil {
+// 			temp = temp.Parent()
+// 		} else {
+// 			break
+// 		}
+// 	}
+
+// 	// Now find the outermost one
+// 	for current != nil && current.Parent() != nil {
+// 		parent := current.Parent()
+// 		if parent.Kind() == "subscript_expression" {
+// 			current = parent
+// 		} else {
+// 			break
+// 		}
+// 	}
+
+// 	return current
+// }
+
+// IsSubscriptLeftHandSide checks if a subscript_expression is the left-hand side of an assignment
+// func IsSubscriptLeftHandSide(assignmentNode, subscriptNode *tree_sitter.Node) bool {
+// 	leftNode := assignmentNode.ChildByFieldName("left")
+// 	if leftNode == nil {
+// 		return false
+// 	}
+
+// 	// Check if leftNode is the subscriptNode or contains it
+// 	return leftNode.Equals(*subscriptNode) || HasChildNode(leftNode, subscriptNode)
+// }
+
+// HasChildNode checks if parent contains child node
+// func HasChildNode(parent, child *tree_sitter.Node) bool {
+// 	for i := uint(0); i < parent.ChildCount(); i++ {
+// 		if parent.Child(i).Equals(*child) {
+// 			return true
+// 		}
+// 	}
+
+// 	return false
+// }
+
+// FindParentOfType finds the nearest parent node of the specified type
+// func FindParentOfType(node *tree_sitter.Node, parentType string) *tree_sitter.Node {
+// 	current := node
+// 	for current != nil && current.Parent() != nil {
+// 		parent := current.Parent()
+// 		if parent.Kind() == parentType {
+// 			return parent
+// 		}
+// 		current = parent
+// 	}
+// 	return nil
+// }

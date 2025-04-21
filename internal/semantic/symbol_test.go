@@ -96,15 +96,25 @@ func TestCollectSymbols(t *testing.T) {
 	assert.Equal(t, 1, len(symbolTable.Symbols["userCount"]))
 	assert.Equal(t, 1, len(symbolTable.Symbols["users"]))
 
-	// if s, ok := symbolsTable.Symbols["dvTP"]; ok {
-	// 	assert.Equal(t, "dvTP", s.Name)
-	// 	// assert.Equal(t, semantic.SectionDefineDevice, s.Section)
-	// 	assert.Equal(t, semantic.SymbolKindDevice, s.Kind)
-	// 	assert.Equal(t, semantic.StorageTypeConstant, s.StorageType)
-	// 	assert.Equal(t, semantic.DataTypeDev, s.DataType)
-	// 	assert.Equal(t, "10001:1:0", s.Value)
-	// 	assert.Equal(t, semantic.SizeOfDataType(semantic.DataTypeDev), s.Size)
-	// 	assert.Equal(t, uint(0), s.Dimensions)
+	for _, s := range symbolTable.Symbols["dvTP4"] {
+		assert.Equal(t, "dvTP4", s.Name)
+		assert.Equal(t, semantic.CaptureSectionDefineDevice, s.Section)
+		assert.Equal(t, semantic.SymbolKindDevice, s.Kind)
+		assert.Equal(t, semantic.StorageTypeVolatile, s.StorageType)
+		assert.Equal(t, semantic.DataTypeDev, s.DataType)
+		assert.Equal(t, "10004:1:0", s.Value)
+		assert.Equal(t, semantic.SizeOfDataType(semantic.DataTypeDev), s.Size)
+		assert.Equal(t, uint(0), s.Dimensions)
+	}
+	// if s, ok := symbolTable.Symbols["dvTP4"]; ok {
+	// 	assert.Equal(t, "dvTP4", s[0].Name)
+	// 	assert.Equal(t, semantic.CaptureSectionDefineDevice, s[0].Section)
+	// 	assert.Equal(t, semantic.SymbolKindDevice, s[0].Kind)
+	// 	assert.Equal(t, semantic.StorageTypeVolatile, s[0].StorageType)
+	// 	assert.Equal(t, semantic.DataTypeDev, s[0].DataType)
+	// 	assert.Equal(t, "10004:1:0", s[0].Value)
+	// 	assert.Equal(t, semantic.SizeOfDataType(semantic.DataTypeDev), s[0].Size)
+	// 	assert.Equal(t, uint(0), s[0].Dimensions)
 	// }
 
 	// if s, ok := symbolsTable.Symbols["MAX_USERS"]; ok {

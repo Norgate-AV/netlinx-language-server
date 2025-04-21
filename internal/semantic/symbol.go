@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
@@ -92,74 +91,19 @@ func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 
 	matches := cursor.Matches(q, tree.RootNode(), nil)
 
-	processor := NewSymbolProcessor(q, content, table)
+	sp := NewSymbolProcessor(q, content, table)
 
 	// Track current section
-	var currentSection string = ""
+	var section string = ""
 
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		if isSectionMatch(match, q) {
-			currentSection = getSectionType(match, q)
-			fmt.Printf("Entered Section: %s\n", strings.ToUpper(strings.TrimPrefix(currentSection, "section.")))
+			section = getSectionType(match, q)
+			// fmt.Printf("Entered Section: %s\n", strings.ToUpper(strings.TrimPrefix(section, "section.")))
 			continue
 		}
 
-		processor.ProcessEntity(match, currentSection)
-
-		// Extract identifier, value, qualifier, and type
-		// var identNode *tree_sitter.Node
-		// var valueNode *tree_sitter.Node
-		// var qualifierNode *tree_sitter.Node
-		// var typeNode *tree_sitter.Node
-
-		// for _, capture := range match.Captures {
-		// 	captureName := q.CaptureNames()[capture.Index]
-		// 	switch captureName {
-		// 	case "identifier":
-		// 		identNode = &capture.Node
-		// 	case "value":
-		// 		valueNode = &capture.Node
-		// 	case "qualifier":
-		// 		qualifierNode = &capture.Node
-		// 	case "type":
-		// 		typeNode = &capture.Node
-		// 	}
-		// }
-
-		// // Skip if any of the nodes are nil
-		// if identNode == nil {
-		// 	continue
-		// }
-
-		// // Set default values
-		// storageType := StorageTypeConstant
-		// value := ""
-		// dataType := DataTypeDev
-
-		// if valueNode != nil {
-		// 	value = valueNode.Utf8Text(content)
-		// }
-
-		// if qualifierNode != nil {
-		// 	storageType = qualifierNode.Utf8Text(content)
-		// }
-
-		// if typeNode != nil {
-		// 	dataType = typeNode.Utf8Text(content)
-		// }
-
-		// // Create and add the symbol
-		// table.AddSymbol(&Symbol{
-		// 	Name:        identNode.Utf8Text(content),
-		// 	Kind:        SymbolKindDevice,
-		// 	Range:       GetNodeRange(identNode),
-		// 	Node:        identNode,
-		// 	StorageType: storageType,
-		// 	DataType:    dataType,
-		// 	Value:       value,
-		// 	Size:        SizeOfDataType(dataType),
-		// 	Dimensions:  0,
-		// })
+		sp.ProcessEntity(match, section)
 	}
 
 	return table

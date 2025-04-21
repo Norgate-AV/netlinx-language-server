@@ -40,11 +40,11 @@ MOREUSERS[][][50] = {
 	}
 }
 
-// DEFINE_TYPE
-// struct User {
-// 	char name[50]
-// 	integer age
-// }
+DEFINE_TYPE
+struct User {
+	char name[50]
+	integer age
+}
 
 DEFINE_VARIABLE
 count
@@ -56,22 +56,9 @@ DEFINE_FUNCTION integer GetUserCount() {
 	return userCount
 }
 
-// define_function integer GetUserAge(User user) {
-// 	return user.age
-// }
-
-// DEFINE_START
-// users[1].name = 'Alice'
-// users[1].age = 30
-// userCount++
-
-// users[2].name = 'Bob'
-// users[2].age = 25
-// userCount++
-
-// users[3].name = 'Charlie'
-// users[3].age = 35
-// userCount++
+define_function integer GetUserAge(User user, char foo) {
+	return user.age
+}
 `
 
 func TestCollectSymbols(t *testing.T) {
@@ -82,11 +69,9 @@ func TestCollectSymbols(t *testing.T) {
 
 	// Act
 	tree := ts.Parser.Parse([]byte(code), nil)
-
 	fmt.Println(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
 
 	symbolsTable := semantic.GetSymbolTable(tree, []byte(code))
-
 	semantic.PrintSymbolTable(symbolsTable)
 
 	// Assert

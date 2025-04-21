@@ -1,6 +1,8 @@
 package semantic
 
 import (
+	"fmt"
+
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 	"github.com/Norgate-AV/netlinx-language-server/queries"
@@ -80,15 +82,25 @@ func (st *SymbolTable) AddSymbol(symbol *Symbol) {
 func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 	table := NewSymbolTable()
 
-	query, err := queries.GetQuery("symbols2.scm")
+	query, err := queries.GetQuery("symbols.scm")
 	if err != nil {
+		fmt.Println("Error getting query:", err)
 		return table
 	}
 
 	q, err := parser.CreateQuery(query)
 	if err != nil {
+		fmt.Println("Error creating query:", err)
 		return table
 	}
+
+	count := GetMatchCount(q, tree)
+	if count == 0 {
+		fmt.Println("No matches found")
+		return table
+	}
+
+	fmt.Println("Match count: ", count)
 
 	cursor := tree_sitter.NewQueryCursor()
 	defer cursor.Close()
@@ -96,21 +108,29 @@ func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 	matches := cursor.Matches(q, tree.RootNode(), nil)
 
 	// Track current section
-	var currentSection string
+	// var currentSection string
 
 	for match := matches.Next(); match != nil; match = matches.Next() {
 		for _, capture := range match.Captures {
-			captureName := q.CaptureNames()[capture.Index]
-			if captureName == "device_section" {
-				currentSection = SectionDefineDevice
-				break
-			}
+			fmt.Printf(
+				"Match %d, Capture %d (%s): %s\n",
+				match.PatternIndex,
+				capture.Index,
+				q.CaptureNames()[capture.Index],
+				capture.Node.Utf8Text(content),
+			)
+
+			// captureName := q.CaptureNames()[capture.Index]
+			// if captureName == "device_section" {
+			// 	currentSection = SectionDefineDevice
+			// 	break
+			// }
 		}
 
 		// Skip processing if we're not in a device section
-		if currentSection != SectionDefineDevice {
-			continue
-		}
+		// if currentSection != SectionDefineDevice {
+		// 	continue
+		// }
 
 		// Extract identifier, value, qualifier, and type
 		var identNode *tree_sitter.Node
@@ -169,6 +189,21 @@ func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 	}
 
 	return table
+}
+
+func GetMatchCount(query *tree_sitter.Query, tree *tree_sitter.Tree) int {
+	count := 0
+
+	cursor := tree_sitter.NewQueryCursor()
+	defer cursor.Close()
+
+	matches := cursor.Matches(query, tree.RootNode(), nil)
+
+	for matches.Next() != nil {
+		count++
+	}
+
+	return count
 }
 
 const (

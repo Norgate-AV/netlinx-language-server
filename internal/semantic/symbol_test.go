@@ -1,7 +1,6 @@
 package semantic_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
@@ -69,21 +68,33 @@ func TestCollectSymbols(t *testing.T) {
 
 	// Act
 	tree := ts.Parser.Parse([]byte(code), nil)
-	fmt.Println(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
+	// fmt.Println(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
 
 	symbolTable := semantic.GetSymbolTable(tree, []byte(code))
-	semantic.PrintSymbolTable(symbolTable)
+	// semantic.PrintSymbolTable(symbolTable)
 
 	// Assert
-	// assert.Contains(t, symbolsTable.Symbols, "dvTP")
-	// assert.Contains(t, symbolsTable.Symbols, "MAX_USERS")
-	// assert.Contains(t, symbolsTable.Symbols, "USERS")
+	assert.Contains(t, symbolTable.Symbols, "dvTP1")
+	assert.Contains(t, symbolTable.Symbols, "dvTP4")
+	assert.Contains(t, symbolTable.Symbols, "dvTP5")
+	assert.Contains(t, symbolTable.Symbols, "MAX_USERS")
+	assert.Contains(t, symbolTable.Symbols, "USERS")
 	// assert.Contains(t, symbolsTable.Symbols, "MOREUSERS")
+	assert.Contains(t, symbolTable.Symbols, "count")
+	assert.Contains(t, symbolTable.Symbols, "count2")
+	assert.Contains(t, symbolTable.Symbols, "userCount")
+	assert.Contains(t, symbolTable.Symbols, "users")
 
-	// assert.Equal(t, 1, len(symbolsTable.Symbols["dvTP"]))
-	// assert.Equal(t, 1, len(symbolsTable.Symbols["MAX_USERS"]))
-	// assert.Equal(t, 1, len(symbolsTable.Symbols["USERS"]))
+	assert.Equal(t, 3, len(symbolTable.Symbols["dvTP1"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["dvTP4"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["dvTP5"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["MAX_USERS"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["USERS"]))
 	// assert.Equal(t, 1, len(symbolsTable.Symbols["MOREUSERS"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["count"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["count2"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["userCount"]))
+	assert.Equal(t, 1, len(symbolTable.Symbols["users"]))
 
 	// if s, ok := symbolsTable.Symbols["dvTP"]; ok {
 	// 	assert.Equal(t, "dvTP", s.Name)
@@ -135,8 +146,6 @@ func TestCollectSymbols(t *testing.T) {
 	// 	// assert.Contains(t, s.Value, "Charlie")
 	// }
 
-	// assert.Contains(t, symbolsTable.Symbols, "userCount")
-	// assert.Contains(t, symbolsTable.Symbols, "users")
 	// assert.Contains(t, symbolsTable, "GetUserCount")
 	// assert.Contains(t, symbolsTable, "GetUserAge")
 }

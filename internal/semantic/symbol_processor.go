@@ -1,6 +1,7 @@
 package semantic
 
 import (
+	"errors"
 	"strings"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
@@ -69,7 +70,11 @@ func (sp *SymbolProcessor) processSymbol(match *tree_sitter.QueryMatch, section 
 		return
 	}
 
-	symbol := sp.createSymbol(info, section)
+	symbol, err := sp.createSymbol(info, section)
+	if err != nil {
+		return
+	}
+
 	sp.table.AddSymbol(symbol)
 }
 
@@ -99,10 +104,19 @@ func (sp *SymbolProcessor) extractSymbolInfo(match *tree_sitter.QueryMatch) Symb
 	return info
 }
 
-func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) *Symbol {
+func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) (*Symbol, error) {
 	var kind SymbolKind
 	var storageType StorageType
 	var dataType DataType
+	var dimensions uint = 0
+
+	if info.Declaration == nil {
+		return nil, errors.New("declaration node is nil")
+	}
+
+	if info.Identifier == nil {
+		return nil, errors.New("identifier node is nil")
+	}
 
 	// Set default values based on the section
 	switch section {
@@ -118,6 +132,7 @@ func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) *Symbol
 		// For array types the data type is implicitly a char array
 		if IsArray(info.Declaration) {
 			dataType = DataTypeChar
+			dimensions = GetArrayDimensions(info.Declaration)
 		} else {
 			dataType = DataTypeInteger
 		}
@@ -130,6 +145,7 @@ func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) *Symbol
 		// For array types the data type is implicitly a char array
 		if IsArray(info.Declaration) {
 			dataType = DataTypeChar
+			dimensions = GetArrayDimensions(info.Declaration)
 		} else {
 			dataType = DataTypeInteger
 		}
@@ -155,10 +171,11 @@ func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) *Symbol
 		Kind:        kind,
 		Range:       GetNodeRange(info.Identifier),
 		Node:        info.Identifier,
+		Section:     section,
 		StorageType: storageType,
 		DataType:    dataType,
 		Value:       value,
 		Size:        size,
-		Dimensions:  0,
-	}
+		Dimensions:  dimensions,
+	}, nil
 }

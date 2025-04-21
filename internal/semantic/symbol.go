@@ -47,10 +47,11 @@ const (
 )
 
 type Symbol struct {
-	Name  string
-	Kind  SymbolKind
-	Range lsp.Range
-	Node  *tree_sitter.Node
+	Name    string
+	Kind    SymbolKind
+	Range   lsp.Range
+	Node    *tree_sitter.Node
+	Section string // Which section this symbol was declared in
 
 	StorageType StorageType // Volatile, Non-volatile, etc.
 	DataType    DataType    // INTEGER, CHAR, etc.

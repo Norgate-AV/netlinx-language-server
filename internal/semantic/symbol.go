@@ -82,7 +82,7 @@ func (st *SymbolTable) AddSymbol(symbol *Symbol) {
 func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 	table := NewSymbolTable()
 
-	query, err := queries.GetQuery("symbols.scm")
+	query, err := queries.GetQuery("symbols2.scm")
 	if err != nil {
 		fmt.Println("Error getting query:", err)
 		return table
@@ -106,7 +106,14 @@ func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 	defer cursor.Close()
 
 	matches := cursor.Matches(q, tree.RootNode(), nil)
-
+	// captures := cursor.Captures(q, tree.RootNode(), nil)
+	// for match, index := captures.Next(); match != nil; match, index = captures.Next() {
+	// 	fmt.Printf(
+	// 		"Capture %d: %s\n",
+	// 		index,
+	// 		match.Captures[index].Node.Utf8Text(content),
+	// 	)
+	// }
 	// Track current section
 	// var currentSection string
 
@@ -125,6 +132,9 @@ func GetSymbolTable(tree *tree_sitter.Tree, content []byte) *SymbolTable {
 			// 	currentSection = SectionDefineDevice
 			// 	break
 			// }
+
+			// switch q.CaptureNames()[capture.Index] {
+			// case "define_device_section":
 		}
 
 		// Skip processing if we're not in a device section

@@ -8,23 +8,23 @@
       declarator: (_
         declarator: (identifier) @identifier
         size: _? @size
-        value: _? @value))
+        value: _? @value)) @device_symbol
 
     (declaration
       (type_qualifier)? @qualifier
       type: _? @type
       declarator: (identifier) @identifier
-      value: _? @value)
+      value: _? @value) @device_symbol
 
     ; Pattern 2: <identifier> = <value>
     (expression_statement
       (assignment_expression
         left: (identifier) @identifier
-        right: _? @value))
+        right: _? @value)) @device_symbol
 
     ; Pattern 3: <identifier>
     (expression_statement
-      (identifier) @identifier)
+      (identifier) @identifier) @device_symbol
 
     ; Pattern 4: <identifier>[] = <value>
     (expression_statement
@@ -33,7 +33,7 @@
           argument: (subscript_expression
             argument: (identifier) @identifier)
           index: _? @size)
-        right: _? @value))
+        right: _? @value)) @device_symbol
   ])+
 )
 

@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	test "github.com/Norgate-AV/netlinx-language-server/internal/testing"
 	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
-	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sourcegraph/jsonrpc2"
 )

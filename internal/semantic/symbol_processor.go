@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Norgate-AV/netlinx-language-server/captures"
+	"github.com/Norgate-AV/netlinx-language-server/internal/captures"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )

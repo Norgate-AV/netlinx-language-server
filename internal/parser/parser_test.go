@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/parser"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 )
 
 func TestBasicParsing(t *testing.T) {

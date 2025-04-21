@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
-	"github.com/Norgate-AV/netlinx-language-server/parser"
 )
 
 const testDocumentURI = "file:///test.axs"

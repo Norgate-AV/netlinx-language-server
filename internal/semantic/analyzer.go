@@ -2,7 +2,7 @@ package semantic
 
 import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
-	"github.com/Norgate-AV/netlinx-language-server/parser"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )

@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	"github.com/Norgate-AV/netlinx-language-server/internal/transport"
 	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
-	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"

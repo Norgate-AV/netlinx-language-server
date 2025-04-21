@@ -6,10 +6,10 @@ import (
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
-	"github.com/Norgate-AV/netlinx-language-server/parser"
-	"github.com/sirupsen/logrus"
 
+	"github.com/sirupsen/logrus"
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 

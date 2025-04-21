@@ -5,9 +5,9 @@ import (
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 	"github.com/Norgate-AV/netlinx-language-server/internal/lsp"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 	"github.com/Norgate-AV/netlinx-language-server/internal/server"
 	"github.com/Norgate-AV/netlinx-language-server/internal/workspace"
-	"github.com/Norgate-AV/netlinx-language-server/parser"
 )
 
 func TestHover(t *testing.T) {

@@ -3,8 +3,8 @@ package semantic
 import (
 	"fmt"
 
-	"github.com/Norgate-AV/netlinx-language-server/parser"
-	"github.com/Norgate-AV/netlinx-language-server/queries"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
+	"github.com/Norgate-AV/netlinx-language-server/internal/queries"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Norgate-AV/netlinx-language-server/captures"
+	"github.com/Norgate-AV/netlinx-language-server/internal/captures"
+	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
-	"github.com/Norgate-AV/netlinx-language-server/parser"
 
 	"github.com/stretchr/testify/assert"
 )

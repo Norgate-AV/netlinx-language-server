@@ -1,8 +1,10 @@
 package semantic_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/Norgate-AV/netlinx-language-server/captures"
 	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
 	"github.com/Norgate-AV/netlinx-language-server/parser"
 
@@ -68,10 +70,10 @@ func TestCollectSymbols(t *testing.T) {
 
 	// Act
 	tree := ts.Parser.Parse([]byte(code), nil)
-	// fmt.Println(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
+	fmt.Println(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
 
 	symbolTable := semantic.GetSymbolTable(tree, []byte(code))
-	// semantic.PrintSymbolTable(symbolTable)
+	semantic.PrintSymbolTable(symbolTable)
 
 	// Assert
 	assert.Contains(t, symbolTable.Symbols, "dvTP1")
@@ -98,12 +100,12 @@ func TestCollectSymbols(t *testing.T) {
 
 	for _, s := range symbolTable.Symbols["dvTP4"] {
 		assert.Equal(t, "dvTP4", s.Name)
-		assert.Equal(t, semantic.CaptureSectionDefineDevice, s.Section)
+		assert.Equal(t, captures.CaptureSectionDefineDevice, s.Section)
 		assert.Equal(t, semantic.SymbolKindDevice, s.Kind)
-		assert.Equal(t, semantic.StorageTypeVolatile, s.StorageType)
-		assert.Equal(t, semantic.DataTypeDev, s.DataType)
+		assert.Equal(t, semantic.SymbolQualifierVolatile, s.Qualifier)
+		assert.Equal(t, semantic.SymbolDataTypeDev, s.DataType)
 		assert.Equal(t, "10004:1:0", s.Value)
-		assert.Equal(t, semantic.SizeOfDataType(semantic.DataTypeDev), s.Size)
+		assert.Equal(t, semantic.SizeOfDataType(semantic.SymbolDataTypeDev), s.Size)
 		assert.Equal(t, uint(0), s.Dimensions)
 	}
 	// if s, ok := symbolTable.Symbols["dvTP4"]; ok {

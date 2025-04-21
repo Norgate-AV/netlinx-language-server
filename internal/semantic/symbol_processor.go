@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Norgate-AV/netlinx-language-server/captures"
+
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
@@ -11,30 +13,6 @@ type SymbolProcessor struct {
 	query   *tree_sitter.Query
 	content []byte
 	table   *SymbolTable
-}
-
-// SymbolInfo contains all extracted data from a symbol match
-type SymbolInfo struct {
-	Declaration *tree_sitter.Node
-	Identifier  *tree_sitter.Node
-	Qualifier   *tree_sitter.Node
-	Type        *tree_sitter.Node
-	Value       *tree_sitter.Node
-	Size        *tree_sitter.Node
-}
-
-// FunctionInfo contains all extracted data from a function match
-type FunctionInfo struct {
-	Definition *tree_sitter.Node
-	Name       *tree_sitter.Node
-	ReturnType *tree_sitter.Node
-	Parameters []*ParameterInfo
-}
-
-type ParameterInfo struct {
-	Type *tree_sitter.Node
-	Name *tree_sitter.Node
-	Size *tree_sitter.Node
 }
 
 func NewSymbolProcessor(query *tree_sitter.Query, content []byte, table *SymbolTable) *SymbolProcessor {
@@ -78,25 +56,27 @@ func (sp *SymbolProcessor) processSymbol(match *tree_sitter.QueryMatch, section 
 	sp.table.AddSymbol(symbol)
 }
 
-func (sp *SymbolProcessor) extractSymbolInfo(match *tree_sitter.QueryMatch) SymbolInfo {
-	var info SymbolInfo
+func (sp *SymbolProcessor) extractSymbolInfo(match *tree_sitter.QueryMatch) captures.SymbolInfo {
+	var info captures.SymbolInfo
 
 	for _, capture := range match.Captures {
 		name := sp.query.CaptureNames()[capture.Index]
 		node := capture.Node
 
 		switch name {
-		case CaptureSymbolDeclaration:
+		case captures.CaptureSymbolDeclaration:
 			info.Declaration = &node
-		case CaptureSymbolQualifier:
+		case captures.CaptureSymbolStorage:
+			info.Storage = &node
+		case captures.CaptureSymbolQualifier:
 			info.Qualifier = &node
-		case CaptureSymbolType:
+		case captures.CaptureSymbolType:
 			info.Type = &node
-		case CaptureSymbolIdentifier:
+		case captures.CaptureSymbolIdentifier:
 			info.Identifier = &node
-		case CaptureSymbolSize:
+		case captures.CaptureSymbolSize:
 			info.Size = &node
-		case CaptureSymbolValue:
+		case captures.CaptureSymbolValue:
 			info.Value = &node
 		}
 	}
@@ -104,10 +84,11 @@ func (sp *SymbolProcessor) extractSymbolInfo(match *tree_sitter.QueryMatch) Symb
 	return info
 }
 
-func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) (*Symbol, error) {
+func (sp *SymbolProcessor) createSymbol(info captures.SymbolInfo, section string) (*Symbol, error) {
 	var kind SymbolKind
-	var storageType StorageType
-	var dataType DataType
+	var storage SymbolStorage
+	var qualifier SymbolQualifier
+	var dataType SymbolDataType
 	var dimensions uint = 0
 
 	if info.Declaration == nil {
@@ -120,39 +101,43 @@ func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) (*Symbo
 
 	// Set default values based on the section
 	switch section {
-	case CaptureSectionDefineDevice:
+	case captures.CaptureSectionDefineDevice:
 		kind = SymbolKindDevice
-		storageType = StorageTypeConstant
-		dataType = DataTypeDev
-	case CaptureSectionDefineConstant:
+		qualifier = SymbolQualifierConstant
+		dataType = SymbolDataTypeDev
+	case captures.CaptureSectionDefineConstant:
 		kind = SymbolKindConstant
-		storageType = StorageTypeConstant
+		qualifier = SymbolQualifierConstant
 
 		// Data type is implicitly an integer for non-array types
 		// For array types the data type is implicitly a char array
 		if IsArray(info.Declaration) {
-			dataType = DataTypeChar
+			dataType = SymbolDataTypeChar
 			dimensions = GetArrayDimensions(info.Declaration)
 		} else {
-			dataType = DataTypeInteger
+			dataType = SymbolDataTypeInteger
 		}
 
-	case CaptureSectionDefineVariable:
+	case captures.CaptureSectionDefineVariable:
 		kind = SymbolKindVariable
-		storageType = StorageTypeNonVolatile
+		qualifier = SymbolQualifierNonVolatile
 
 		// Data type is implicitly an integer for non-array types
 		// For array types the data type is implicitly a char array
 		if IsArray(info.Declaration) {
-			dataType = DataTypeChar
+			dataType = SymbolDataTypeChar
 			dimensions = GetArrayDimensions(info.Declaration)
 		} else {
-			dataType = DataTypeInteger
+			dataType = SymbolDataTypeInteger
 		}
 	}
 
+	if info.Storage != nil {
+		storage = info.Storage.Utf8Text(sp.content)
+	}
+
 	if info.Qualifier != nil {
-		storageType = info.Qualifier.Utf8Text(sp.content)
+		qualifier = info.Qualifier.Utf8Text(sp.content)
 	}
 
 	if info.Type != nil {
@@ -164,18 +149,20 @@ func (sp *SymbolProcessor) createSymbol(info SymbolInfo, section string) (*Symbo
 		value = info.Value.Utf8Text(sp.content)
 	}
 
-	size := SizeOfDataType(strings.ToLower(dataType))
+	size := SizeOfDataType(dataType)
 
 	return &Symbol{
-		Name:        info.Identifier.Utf8Text(sp.content),
-		Kind:        kind,
-		Range:       GetNodeRange(info.Identifier),
-		Node:        info.Identifier,
-		Section:     section,
-		StorageType: storageType,
-		DataType:    dataType,
-		Value:       value,
-		Size:        size,
-		Dimensions:  dimensions,
+		Name:       info.Identifier.Utf8Text(sp.content),
+		Kind:       kind,
+		Range:      GetNodeRange(info.Identifier),
+		Node:       info.Identifier,
+		Section:    section,
+		Storage:    storage,
+		Qualifier:  qualifier,
+		DataType:   dataType,
+		Value:      value,
+		Size:       size,
+		Dimensions: dimensions,
+		Scope:      SymbolScopeGlobal,
 	}, nil
 }

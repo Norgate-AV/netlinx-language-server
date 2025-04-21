@@ -9,29 +9,31 @@ import (
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
-func SizeOfDataType(dataType DataType) uint {
+func SizeOfDataType(dataType SymbolDataType) uint {
+	dataType = strings.ToLower(dataType)
+
 	switch dataType {
-	case DataTypeChar:
+	case SymbolDataTypeChar:
 		return 1
-	case DataTypeWideChar:
+	case SymbolDataTypeWideChar:
 		return 2
-	case DataTypeInteger:
+	case SymbolDataTypeInteger:
 		return 2
-	case DataTypeSinteger:
+	case SymbolDataTypeSinteger:
 		return 2
-	case DataTypeLong:
+	case SymbolDataTypeLong:
 		return 4
-	case DataTypeSlong:
+	case SymbolDataTypeSlong:
 		return 4
-	case DataTypeFloat:
+	case SymbolDataTypeFloat:
 		return 8
-	case DataTypeDouble:
+	case SymbolDataTypeDouble:
 		return 8
-	case DataTypeDev:
+	case SymbolDataTypeDev:
 		return 6
-	case DataTypeDevChan:
+	case SymbolDataTypeDevChan:
 		return 8
-	case DataTypeDevLev:
+	case SymbolDataTypeDevLev:
 		return 8
 	default:
 		// How can I work out the size of a custom data type?
@@ -166,114 +168,3 @@ func getSectionType(match *tree_sitter.QueryMatch, query *tree_sitter.Query) str
 
 	return ""
 }
-
-// IsInSubscriptExpression checks if a node is part of a subscript expression
-// func IsInSubscriptExpression(node *tree_sitter.Node) bool {
-// 	current := node
-// 	for current != nil && current.Parent() != nil {
-// 		parent := current.Parent()
-// 		if parent.Kind() == "subscript_expression" {
-// 			for i := uint(0); i < parent.NamedChildCount(); i++ {
-// 				if parent.NamedChild(i).Equals(*current) ||
-// 					(parent.ChildByFieldName("argument") != nil &&
-// 						parent.ChildByFieldName("argument").Equals(*current)) {
-// 					return true
-// 				}
-// 			}
-// 		}
-// 		current = parent
-// 	}
-// 	return false
-// }
-
-// GetBaseIdentifier gets the base identifier in a subscript expression
-// func GetBaseIdentifier(node *tree_sitter.Node) *tree_sitter.Node {
-// 	if node.Kind() == "identifier" {
-// 		return node
-// 	}
-
-// 	current := node
-// 	for current != nil && current.Kind() == "subscript_expression" {
-// 		argument := current.ChildByFieldName("argument")
-// 		if argument != nil {
-// 			if argument.Kind() == "identifier" {
-// 				return argument
-// 			}
-// 			current = argument
-// 		} else {
-// 			break
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// GetOutermostSubscriptExpression finds the outermost subscript_expression
-// func GetOutermostSubscriptExpression(node *tree_sitter.Node) *tree_sitter.Node {
-// 	if node.Kind() != "subscript_expression" && node.Parent() == nil {
-// 		return nil
-// 	}
-
-// 	var current *tree_sitter.Node
-
-// 	// Find the first subscript expression
-// 	temp := node
-// 	for temp != nil {
-// 		if temp.Kind() == "subscript_expression" {
-// 			current = temp
-// 			break
-// 		}
-// 		if temp.Parent() != nil {
-// 			temp = temp.Parent()
-// 		} else {
-// 			break
-// 		}
-// 	}
-
-// 	// Now find the outermost one
-// 	for current != nil && current.Parent() != nil {
-// 		parent := current.Parent()
-// 		if parent.Kind() == "subscript_expression" {
-// 			current = parent
-// 		} else {
-// 			break
-// 		}
-// 	}
-
-// 	return current
-// }
-
-// IsSubscriptLeftHandSide checks if a subscript_expression is the left-hand side of an assignment
-// func IsSubscriptLeftHandSide(assignmentNode, subscriptNode *tree_sitter.Node) bool {
-// 	leftNode := assignmentNode.ChildByFieldName("left")
-// 	if leftNode == nil {
-// 		return false
-// 	}
-
-// 	// Check if leftNode is the subscriptNode or contains it
-// 	return leftNode.Equals(*subscriptNode) || HasChildNode(leftNode, subscriptNode)
-// }
-
-// HasChildNode checks if parent contains child node
-// func HasChildNode(parent, child *tree_sitter.Node) bool {
-// 	for i := uint(0); i < parent.ChildCount(); i++ {
-// 		if parent.Child(i).Equals(*child) {
-// 			return true
-// 		}
-// 	}
-
-// 	return false
-// }
-
-// FindParentOfType finds the nearest parent node of the specified type
-// func FindParentOfType(node *tree_sitter.Node, parentType string) *tree_sitter.Node {
-// 	current := node
-// 	for current != nil && current.Parent() != nil {
-// 		parent := current.Parent()
-// 		if parent.Kind() == parentType {
-// 			return parent
-// 		}
-// 		current = parent
-// 	}
-// 	return nil
-// }

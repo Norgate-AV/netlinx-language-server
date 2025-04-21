@@ -40,6 +40,31 @@ const (
 // 	Children     []*Symbol // For hierarchical symbols
 // }
 
+type Symbol struct {
+	Name    string
+	Kind    SymbolKind
+	Range   lsp.Range
+	Node    *tree_sitter.Node
+	Section string // Which section this symbol was declared in
+
+	Storage   SymbolStorage   // stack_var, local_var
+	Qualifier SymbolQualifier // constant, volatile, etc.
+	DataType  SymbolDataType  // INTEGER, CHAR, etc.
+	Value     string          // Initial value if any
+	Scope     SymbolScope     // Scope of the symbol (e.g., global, local)
+
+	Size       uint
+	Dimensions uint
+
+	Parameters []Parameter
+	ReturnType SymbolDataType
+
+	Referenced bool // Whether the symbol is referenced in the code
+
+	// Is this symbol inside a preprocessor directive?
+	Preprocessor bool
+}
+
 // Section represents a NetLinx section (DEFINE_DEVICE, etc.)
 type Section struct {
 	Kind  string

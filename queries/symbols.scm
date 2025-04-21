@@ -9,6 +9,7 @@
 
 ; Pattern 1: [qualifier] [type] <identifier> = <value>
 (declaration
+  (storage_class_specifier)? @symbol.storage
   (type_qualifier)? @symbol.qualifier
   type: _? @symbol.type
   declarator: (_
@@ -17,6 +18,7 @@
     value: _? @symbol.value)) @symbol.declaration
 
 (declaration
+  (storage_class_specifier)? @symbol.storage
   (type_qualifier)? @symbol.qualifier
   type: _? @symbol.type
   declarator: (identifier) @symbol.identifier

@@ -1,4 +1,4 @@
-package semantic
+package captures
 
 // Sections (just starting with the most common ones for now)
 const (
@@ -13,6 +13,7 @@ const (
 // Symbols
 const (
 	CaptureSymbolDeclaration = "symbol.declaration"
+	CaptureSymbolStorage     = "symbol.storage"
 	CaptureSymbolQualifier   = "symbol.qualifier"
 	CaptureSymbolType        = "symbol.type"
 	CaptureSymbolIdentifier  = "symbol.identifier"

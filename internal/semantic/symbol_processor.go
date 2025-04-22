@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Norgate-AV/netlinx-language-server/internal/captures"
+	"github.com/Norgate-AV/netlinx-language-server/internal/logger"
 
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
@@ -13,13 +14,15 @@ type SymbolProcessor struct {
 	query   *tree_sitter.Query
 	content []byte
 	table   *SymbolTable
+	Log     logger.Logger
 }
 
-func NewSymbolProcessor(query *tree_sitter.Query, content []byte, table *SymbolTable) *SymbolProcessor {
+func NewSymbolProcessor(query *tree_sitter.Query, content []byte, table *SymbolTable, log logger.Logger) *SymbolProcessor {
 	return &SymbolProcessor{
 		query:   query,
 		content: content,
 		table:   table,
+		Log:     log,
 	}
 }
 

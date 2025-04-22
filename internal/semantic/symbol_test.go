@@ -7,6 +7,7 @@ import (
 	"github.com/Norgate-AV/netlinx-language-server/internal/captures"
 	"github.com/Norgate-AV/netlinx-language-server/internal/parser"
 	"github.com/Norgate-AV/netlinx-language-server/internal/semantic"
+	test "github.com/Norgate-AV/netlinx-language-server/internal/testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -72,7 +73,7 @@ func TestCollectSymbols(t *testing.T) {
 	tree := ts.Parser.Parse([]byte(code), nil)
 	fmt.Println(parser.PrettyPrint(tree, parser.PrettyPrintOptions{ShowRanges: true}))
 
-	symbolTable := semantic.GetSymbolTable(tree, []byte(code))
+	symbolTable := semantic.GetSymbolTable(tree, []byte(code), test.NewTestLogger(t))
 	semantic.PrintSymbolTable(symbolTable)
 
 	// Assert

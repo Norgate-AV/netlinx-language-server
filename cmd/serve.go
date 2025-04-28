@@ -15,6 +15,15 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+type Serve struct {
+	LogFile string
+	Mode    string
+	Port    string
+	Address string
+
+	app *Application
+}
+
 func serve(ctx context.Context, c *cli.Command) error {
 	if c.Bool("version") {
 		fmt.Println(c.Version)

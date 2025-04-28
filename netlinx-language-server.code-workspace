@@ -1,11 +1,17 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../vscode-better-netlinx"
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../vscode-better-netlinx"
+        },
+        {
+            "path": "../tree-sitter-netlinx"
+        },
+        {
+            "path": "../tools"
+        }
+    ],
+    "settings": {}
 }
